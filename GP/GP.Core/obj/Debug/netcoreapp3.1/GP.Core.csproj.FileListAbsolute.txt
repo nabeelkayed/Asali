@@ -1,0 +1,15 @@
+C:\Users\hp\Desktop\GP\GP\GP.Core\obj\Debug\netcoreapp3.1\GP.Core.csproj.AssemblyReference.cache
+C:\Users\hp\Desktop\GP\GP\GP.Core\obj\Debug\netcoreapp3.1\GP.Core.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\hp\Desktop\GP\GP\GP.Core\obj\Debug\netcoreapp3.1\GP.Core.AssemblyInfoInputs.cache
+C:\Users\hp\Desktop\GP\GP\GP.Core\obj\Debug\netcoreapp3.1\GP.Core.AssemblyInfo.cs
+C:\Users\hp\Desktop\GP\GP\GP.Core\obj\Debug\netcoreapp3.1\GP.Core.csproj.CoreCompileInputs.cache
+C:\Users\hp\Desktop\GP\GP\GP.Core\bin\Debug\netcoreapp3.1\GP.Core.deps.json
+C:\Users\hp\Desktop\GP\GP\GP.Core\bin\Debug\netcoreapp3.1\GP.Core.dll
+C:\Users\hp\Desktop\GP\GP\GP.Core\bin\Debug\netcoreapp3.1\GP.Core.pdb
+C:\Users\hp\Desktop\GP\GP\GP.Core\bin\Debug\netcoreapp3.1\GP.Data.dll
+C:\Users\hp\Desktop\GP\GP\GP.Core\bin\Debug\netcoreapp3.1\GP.Utils.dll
+C:\Users\hp\Desktop\GP\GP\GP.Core\bin\Debug\netcoreapp3.1\GP.Data.pdb
+C:\Users\hp\Desktop\GP\GP\GP.Core\bin\Debug\netcoreapp3.1\GP.Utils.pdb
+C:\Users\hp\Desktop\GP\GP\GP.Core\obj\Debug\netcoreapp3.1\GP.Core.csproj.CopyComplete
+C:\Users\hp\Desktop\GP\GP\GP.Core\obj\Debug\netcoreapp3.1\GP.Core.dll
+C:\Users\hp\Desktop\GP\GP\GP.Core\obj\Debug\netcoreapp3.1\GP.Core.pdb
