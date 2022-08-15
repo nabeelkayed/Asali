@@ -5,9 +5,10 @@ using System.Threading.Tasks;
 
 namespace RealWord.Core.Models
 {
-    public class ReviewForCreationDto
+    public class ReviewForCreationDto 
     {
-        public string Body { get; set; }
+        public string ReviewText { get; set; }
         public int Rate { get; set; }
+        public List<string> Photos { get; set; }
     }
 }

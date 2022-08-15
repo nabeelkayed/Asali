@@ -3,7 +3,8 @@ using System;
 using System.Linq;
 using RealWord.Data.Entities;
 using RealWord.Core.Models;
-
+using GP.Data.Entities;
+using GP.Core.Models;
 
 namespace RealWord.Core.Profiles
 {
@@ -11,7 +12,7 @@ namespace RealWord.Core.Profiles
     {
         public BusinessProfile()
         {
-            CreateMap<Business, BusinessDto>()
+            CreateMap<BusinessOwner, BusinessDto>()
               /*  .ForMember(
                     dest => dest.FavoritesCount,
                     opt => opt.MapFrom(src => src.Favorites.Count))
@@ -23,8 +24,14 @@ namespace RealWord.Core.Profiles
                     opt => opt.MapFrom((src, dest, destMember, context) => src.Favorites.Select(s => s.UserId).ToList()
                               .Contains((Guid)context.Items["currentUserId"])))*/;
 
-            CreateMap<BusinessForCreationDto, Business>();
-            CreateMap<BusinessForUpdateDto, Business>();
+            CreateMap<Business, BusinessProfileDto>();
+
+            CreateMap<BusinessForCreationDto, BusinessOwner>(); //done
+            CreateMap<BusinessForUpdateDto, BusinessOwner>(); //done
+            CreateMap<BusinessForUpdatePasswordDto, BusinessOwner>();
+            CreateMap<BusinessLoginDto, BusinessOwner>(); //done
+            CreateMap<BusinessProfileForUpdateDto, Business>(); //done
+            CreateMap<BusinessProfileSetupDto, Business>(); //done
         }
     }
 }

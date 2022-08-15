@@ -19,15 +19,21 @@ namespace RealWord.Data.Repositories
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public async Task<bool> BusinessExistsAsync(string businessUsername)
+        public async Task<bool> BusinessExistsAsync(string businessName)
         {
-            if (String.IsNullOrEmpty(businessUsername))
+            if (String.IsNullOrEmpty(businessName))
             {
-                throw new ArgumentNullException(nameof(businessUsername));
+                throw new ArgumentNullException(nameof(businessName));
             }
 
-            bool businessExists = await _context.Businesses.AnyAsync(b => b.BusinessUsername == businessUsername);
+            bool businessExists = await _context.Businesses.AnyAsync(b => b.BusinessName == businessName);
             return businessExists;
+        }
+
+        public async Task<bool> EmailAvailableAsync(string email)
+        {
+            var emailNotAvailable = await _context.BusinessOwners.Select(a => a.Email).ContainsAsync(email);
+            return emailNotAvailable;
         }
 
         public async Task<BusinessOwner> LoginUserAsync(BusinessOwner businessOwner)
@@ -37,6 +43,13 @@ namespace RealWord.Data.Repositories
             return LoginBusiness;
         }
 
+        public async Task<Business> GetBusinessByIdAsync(Guid businessId)
+        {
+
+            var business = await _context.Businesses.FirstOrDefaultAsync(b => b.BusinessId == businessId);
+            return business;
+        }
+
         public async Task<Business> GetBusinessAsync(string businessUsername)
         {
             if (String.IsNullOrEmpty(businessUsername))
@@ -44,21 +57,35 @@ namespace RealWord.Data.Repositories
                 throw new ArgumentNullException(nameof(businessUsername));
             }
 
-            var business = await _context.Businesses.Include(b => b.Tags)
-                                                 .FirstOrDefaultAsync(b => b.BusinessUsername == businessUsername);
+            var business = await _context.Businesses.FirstOrDefaultAsync(b => b.BusinessName == businessUsername);
             return business;
         }
 
-        public async Task<Business> GetBusinessAsNoTrackingAsync(string businessUsername)
+        public async Task<BusinessOwner> GetBusinessOwnerAsync(string businessName)
         {
-            if (String.IsNullOrEmpty(businessUsername))
+            if (String.IsNullOrEmpty(businessName))
             {
-                throw new ArgumentNullException(nameof(businessUsername));
+                throw new ArgumentNullException(nameof(businessName));
             }
+
+            var business = await _context.Businesses.FirstOrDefaultAsync(b => b.BusinessName == businessName);
+
+            var businessOwner = await _context.BusinessOwners.FirstOrDefaultAsync(b => b.BusinessId == business.BusinessId);
+            return businessOwner;
+        }
+
+        public async Task<Business> GetBusinessAsNoTrackingAsync(string businessOwnerEmail)
+        {
+            if (String.IsNullOrEmpty(businessOwnerEmail))
+            {
+                throw new ArgumentNullException(nameof(businessOwnerEmail));
+            }
+
+            var businessOwner = await _context.BusinessOwners.FirstOrDefaultAsync(a => a.Email == businessOwnerEmail);
 
             var business = await _context.Businesses.AsNoTracking()
                                            .Include(b => b.Reviews)
-                                           .FirstOrDefaultAsync(b => b.BusinessName == businessUsername);
+                                           .FirstOrDefaultAsync(b => b.BusinessId == businessOwner.BusinessId);
             return business;
         }
 
@@ -66,20 +93,21 @@ namespace RealWord.Data.Repositories
         {
             var businesses = _context.Businesses.AsQueryable();
 
-           /* if (!string.IsNullOrEmpty(businessesParameters.Tag))
-            {
-                var tag = businessesParameters.Tag.Trim();
-                var userfavarets = await _context.ArticleTags.Where(af => af.TagId == tag)
-                                                       .Select(a => a.ArticleId)
-                                                       .ToListAsync();
-                businesses = businesses.Where(a => userfavarets.Contains(a.BusinessId));
-            }*/
+            /* if (!string.IsNullOrEmpty(businessesParameters.Tag))
+             {
+                 var tag = businessesParameters.Tag.Trim();
+                 var userfavarets = await _context.ArticleTags.Where(af => af.TagId == tag)
+                                                        .Select(a => a.ArticleId)
+                                                        .ToListAsync();
+                 businesses = businesses.Where(a => userfavarets.Contains(a.BusinessId));
+             }*/
             if (!string.IsNullOrEmpty(businessesParameters.Category))
             {
                 //var authorname = businessesParameters.Category.Trim();
                 //var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == authorname);
                 businesses = businesses.Where(b => b.Category == businessesParameters.Category);
             }
+
             if (!string.IsNullOrEmpty(businessesParameters.Followed))
             {
                 var username = businessesParameters.Followed.Trim();
@@ -93,29 +121,26 @@ namespace RealWord.Data.Repositories
 
             businesses = businesses.Skip(businessesParameters.Offset)
                                .Take(businessesParameters.Limit)
-                             /*  .Include(a => a.User)
-                               .ThenInclude(a => a.Followers)
-                               .Include(a => a.Tags)
-                               .Include(a => a.Favorites)
-                               .OrderByDescending(x => x.CreatedAt)*/;
+                                                 /*  .Include(a => a.User)
+                                                   .ThenInclude(a => a.Followers)
+                                                   .Include(a => a.Tags)
+                                                   .Include(a => a.Favorites)
+                                                   .OrderByDescending(x => x.CreatedAt)*/;
 
             var allBusinesses = await businesses.ToListAsync();
             return allBusinesses;
         }
 
-        public async Task<List<Photo>> GetPhotosForBusinessAsync(string businessUsername)
+        public async Task<List<Photo>> GetPhotosForBusinessAsync(Guid businessId)
         {
-            var business = await _context.Businesses.FirstOrDefaultAsync(b => b.BusinessName == businessUsername);
-
-            var photos = await _context.Photos.Where(b => b.BusinessId == business.BusinessId).ToListAsync();
+            var photos = await _context.Photos.Where(b => b.BusinessId == businessId).ToListAsync();
             return photos;
         }
 
-        public async Task<List<User>> GetFollowersForBusinessAsync(string businessUsername)
+        public async Task<List<User>> GetFollowersForBusinessAsync(Guid businessId)
         {
-            var business = await _context.Businesses.FirstOrDefaultAsync(b => b.BusinessName == businessUsername);
 
-            var followers = await _context.BusinessFollowers.Where(b => b.BusinessId == business.BusinessId).Select(a => a.User).ToListAsync();
+            var followers = await _context.BusinessFollowers.Where(b => b.BusinessId == businessId).Select(a => a.User).ToListAsync();
             return followers;
         }
 
@@ -124,16 +149,106 @@ namespace RealWord.Data.Repositories
             var business = new Business { BusinessId = Guid.NewGuid() };
             await _context.Businesses.AddAsync(business);
 
+            businessOwner.BusinessOwnerId = Guid.NewGuid();
             businessOwner.BusinessId = business.BusinessId;
             await _context.BusinessOwners.AddAsync(businessOwner);
         }
 
-        public void UpdateBusiness(Business updatedBusiness, Business businessForUpdate)
+        public void SetupBusinessProfile(Business updatedBusiness, Business businessEntityForUpdate)
         {
+            if (!string.IsNullOrWhiteSpace(businessEntityForUpdate.BusinessName))
+            {
+                updatedBusiness.BusinessName = businessEntityForUpdate.BusinessName;
+            }
+
+            if (!string.IsNullOrWhiteSpace(businessEntityForUpdate.Location))
+            {
+                updatedBusiness.Location = businessEntityForUpdate.Location;
+            }
+
+            if (!string.IsNullOrWhiteSpace(businessEntityForUpdate.Category))
+            {
+                updatedBusiness.Category = businessEntityForUpdate.Category;
+            }
+
+            if (!string.IsNullOrWhiteSpace(businessEntityForUpdate.MenuWebsite))
+            {
+                updatedBusiness.MenuWebsite = businessEntityForUpdate.MenuWebsite;
+            }
+
+            if (!string.IsNullOrWhiteSpace(businessEntityForUpdate.Website))
+            {
+                updatedBusiness.Website = businessEntityForUpdate.Website;
+            }
+
+            if (!string.IsNullOrWhiteSpace(businessEntityForUpdate.PhoneNumber))
+            {
+                updatedBusiness.PhoneNumber = businessEntityForUpdate.PhoneNumber;
+            }
+
+            var owner = _context.BusinessOwners.FirstOrDefault(a => a.BusinessId == updatedBusiness.BusinessId);
+            owner.Setup = true;
+        }
+
+        public void UpdateBusinessProfile(Business updatedBusiness, Business businessProfileForUpdate)
+        {
+            if (!string.IsNullOrWhiteSpace(businessProfileForUpdate.BusinessName))
+            {
+                updatedBusiness.BusinessName = businessProfileForUpdate.BusinessName;
+            }
+
+            if (!string.IsNullOrWhiteSpace(businessProfileForUpdate.Location))
+            {
+                updatedBusiness.Location = businessProfileForUpdate.Location;
+            }
+
+            if (!string.IsNullOrWhiteSpace(businessProfileForUpdate.Category))
+            {
+                updatedBusiness.Category = businessProfileForUpdate.Category;
+            }
+
+            if (!string.IsNullOrWhiteSpace(businessProfileForUpdate.MenuWebsite))
+            {
+                updatedBusiness.MenuWebsite = businessProfileForUpdate.MenuWebsite;
+            }
+
+            if (!string.IsNullOrWhiteSpace(businessProfileForUpdate.Website))
+            {
+                updatedBusiness.Website = businessProfileForUpdate.Website;
+            }
+
+            if (!string.IsNullOrWhiteSpace(businessProfileForUpdate.PhoneNumber))
+            {
+                updatedBusiness.PhoneNumber = businessProfileForUpdate.PhoneNumber;
+            }
+        }
+
+        public void UpdateBusiness(BusinessOwner updatedBusiness, BusinessOwner businessForUpdate)
+        {
+
+            if (!string.IsNullOrWhiteSpace(businessForUpdate.FirstName))
+            {
+                updatedBusiness.FirstName = businessForUpdate.FirstName;
+            }
+
+            if (!string.IsNullOrWhiteSpace(businessForUpdate.LastName))
+            {
+                updatedBusiness.LastName = businessForUpdate.LastName;
+            }
+
+            if (!string.IsNullOrWhiteSpace(businessForUpdate.Email))
+            {
+                updatedBusiness.Email = businessForUpdate.Email;
+            }
+
+            if (!string.IsNullOrWhiteSpace(businessForUpdate.Photo))
+            {
+                updatedBusiness.Photo = businessForUpdate.Photo;
+            }
 
         }
 
-        public void UpdateBusinessPassword(Business updatedBusiness, Business businessEntityForUpdate)
+        public void UpdateBusinessPassword(BusinessOwner updatedBusiness, BusinessOwner businessEntityForUpdate)
         {
 
         }
@@ -168,5 +283,6 @@ namespace RealWord.Data.Repositories
         {
             await _context.SaveChangesAsync();
         }
+
     }
 }

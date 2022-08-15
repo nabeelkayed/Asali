@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RealWord.Data;
 
 namespace GP.Data.Migrations
 {
     [DbContext(typeof(GPDbContext))]
-    partial class GPDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220813103520_MyFirstMigration11")]
+    partial class MyFirstMigration11
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -45,8 +47,8 @@ namespace GP.Data.Migrations
                     b.Property<string>("Photo")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("Setup")
-                        .HasColumnType("bit");
+                    b.Property<string>("Setup")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("BusinessOwnerId");
 
@@ -66,6 +68,9 @@ namespace GP.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("BusinessName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BusinessUsername")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Category")

@@ -27,6 +27,7 @@ namespace RealWord.Data.Repositories
             bool reviewExists = await _context.Reviews.AnyAsync(c => c.ReviewId == reviewId);
             return reviewExists;
         }
+
         public async Task<Review> GetReviewAsync(Guid reviewId)
         {
             if (reviewId == null || reviewId == Guid.Empty)
@@ -38,14 +39,20 @@ namespace RealWord.Data.Repositories
                                                  .FirstOrDefaultAsync(r => r.ReviewId == reviewId);
             return review;
         }
+
         public async Task<List<Review>> GetReviewsForBusinessAsync(Guid businessId)
         {
             var businessReviews = await _context.Reviews.Where(c => c.BusinessId == businessId)
                                                    .Include(c => c.User)
-                                                   .ThenInclude(c => c.Followings)
+                                                   .Include(c=>c.Useful)
+                                                   .Include(c => c.Cool)
+                                                   .Include(c => c.Funny)
+                                                   .Include(c=>c.Photos)
+                                                   //.ThenInclude(c => c.Followings)
                                                    .ToListAsync();
             return businessReviews;
         }
+
         public async Task<List<Review>> GetFeedReviewsAsync(Guid currentUserId, FeedReviewsParameters feedReviewsParameters)
         {
             var userFollowings = await _context.BusinessFollowers.Where(u => u.UserId == currentUserId)
@@ -55,7 +62,7 @@ namespace RealWord.Data.Repositories
             {
                 throw new ArgumentNullException(nameof(userFollowings));
             }
-
+            //لشو لازم نعمل include
             var feedReviews = await _context.Reviews.Where(r => userFollowings.Contains(r.BusinessId))
                                                 .Include(r => r.User)
                                                 .ThenInclude(r => r.Followings)
@@ -65,10 +72,23 @@ namespace RealWord.Data.Repositories
                                                 .ToListAsync();
             return feedReviews;
         }
-        public async Task CreateReviewAsync(Review review)
+
+        public async Task CreateReviewAsync(Guid businessId ,Guid currentUserId, Review review)
         {
+            review.ReviewId = Guid.NewGuid();
+
+            review.UserId = currentUserId;
+
+            review.BusinessId = businessId;
+
+            var timeStamp = DateTime.Now;
+            review.CreatedAt = timeStamp;
+
+            //لازم ننشئ الصور
+
             await _context.Reviews.AddAsync(review);
         }
+
         public void DeleteReview(Review review)
         {
             _context.Reviews.Remove(review);
@@ -76,16 +96,16 @@ namespace RealWord.Data.Repositories
 
         public async Task CoolReviewAsync(Guid currentUserId, Guid reviewId)
         {
-            var CoolReview =
+            var coolReview =
                 new ReviewCool { ReviewId = reviewId, UserId = currentUserId };
-            await _context.ReviewCool.AddAsync(CoolReview);
+            await _context.ReviewCool.AddAsync(coolReview);
         }
 
         public void UncoolReviewAsync(Guid currentUserId, Guid reviewId)
         {
-            var CoolReview =
+            var unCoolReview =
                 new ReviewCool { ReviewId = reviewId, UserId = currentUserId };
-            _context.ReviewCool.Remove(CoolReview);
+            _context.ReviewCool.Remove(unCoolReview);
         }
 
         public async Task<bool> IsCoolAsync(Guid currentUserId, Guid reviewId)
@@ -104,9 +124,9 @@ namespace RealWord.Data.Repositories
 
         public void UnusfulReviewAsync(Guid currentUserId, Guid reviewId)
         {
-            var usfulReview =
+            var unUsfulReview =
                 new ReviewUseful { ReviewId = reviewId, UserId = currentUserId };
-            _context.ReviewUseful.Remove(usfulReview);
+            _context.ReviewUseful.Remove(unUsfulReview);
         }
 
         public async Task<bool> IsUsefulAsync(Guid currentUserId, Guid reviewId)
@@ -125,9 +145,9 @@ namespace RealWord.Data.Repositories
 
         public void UnfunnyReviewAsync(Guid currentUserId, Guid reviewId)
         {
-            var funnyReview =
+            var unFunnyReview =
                 new ReviewFunny { ReviewId = reviewId, UserId = currentUserId };
-            _context.ReviewFunny.Remove(funnyReview);
+            _context.ReviewFunny.Remove(unFunnyReview);
         }
 
         public async Task<bool> IsFunnyAsync(Guid currentUserId, Guid reviewId)

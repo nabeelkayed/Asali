@@ -12,10 +12,10 @@ namespace RealWord.Web.Validators
     {
         public BusinessForUpdateValidator()
         {
-            RuleFor(b => b.Email).NotEmpty();
+           /* RuleFor(b => b.Email).NotEmpty();
             RuleFor(b => b.FirstName).NotEmpty();
             RuleFor(b => b.LastName).NotEmpty();
-            RuleFor(b => b.Photo).NotEmpty();
+            RuleFor(b => b.Photo).NotEmpty();*/
         }
     }
 }

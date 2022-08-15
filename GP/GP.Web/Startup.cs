@@ -139,7 +139,8 @@ namespace GP.Web
 
             app.UseRouting();
 
-            app.UseCors(options => options.WithOrigins("http://localhost:50001")
+            app.UseCors(options => options.//AllowAnyOrigin()
+            WithOrigins("http://localhost:3000")
                                          .AllowAnyMethod()
                                          .AllowAnyHeader());
 

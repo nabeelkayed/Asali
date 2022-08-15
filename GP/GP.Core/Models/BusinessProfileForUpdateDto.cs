@@ -13,8 +13,7 @@ namespace RealWord.Core.Models
         public string Website { get; set; }
         public string MenuWebsite { get; set; }
         public string Category { get; set; }
-        public string Map { get; set; } 
+        public string Map { get; set; }
         public string PhoneNumber { get; set; }
-
     }
 }

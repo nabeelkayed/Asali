@@ -44,7 +44,7 @@ namespace RealWord.Data
 
                 b.HasOne<BusinessOwner>(b => b.BusinessOwner)
                 .WithOne(bo => bo.Business)
-                .HasForeignKey<BusinessOwner>(bo => bo.BusinessOwnerId)
+                .HasForeignKey<BusinessOwner>(bo => bo.BusinessId)
                 .OnDelete(DeleteBehavior.Cascade);
 
                 b.HasMany<Review>(b => b.Reviews)
@@ -52,20 +52,20 @@ namespace RealWord.Data
                 .HasForeignKey(r => r.BusinessId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-                b.HasMany<Feature>(b => b.Features)
+              /*  b.HasMany<Feature>(b => b.Features)
                 .WithOne(f => f.Business)
                 .HasForeignKey(f => f.BusinessId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Cascade);*/
 
                 b.HasMany<Photo>(b => b.Photos)
                .WithOne(p => p.Business)
                .HasForeignKey(p => p.BusinessId)
                .OnDelete(DeleteBehavior.Cascade);
 
-                b.HasMany<Service>(b => b.Services)
+               /* b.HasMany<Service>(b => b.Services)
                .WithOne(s => s.Business)
                .HasForeignKey(s => s.BusinessId)
-               .OnDelete(DeleteBehavior.Cascade);
+               .OnDelete(DeleteBehavior.Cascade);*/
 
                 b.HasMany<OpenDay>(b => b.OpenDays)
                .WithOne(od => od.Business)
@@ -96,7 +96,7 @@ namespace RealWord.Data
                 .OnDelete(DeleteBehavior.Cascade);
             });
 
-            modelBuilder.Entity<BusinessTags>(bt =>
+           /* modelBuilder.Entity<BusinessTags>(bt =>
             {
                 bt.HasKey(at => new { at.BusinessId, at.TagId });
 
@@ -110,14 +110,14 @@ namespace RealWord.Data
                 .HasForeignKey(bt => bt.TagId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            });
+            });*/
 
-            modelBuilder.Entity<Feature>(f =>
+           /* modelBuilder.Entity<Feature>(f =>
             {
                 f.HasKey(f => f.FeatureId);
 
                 f.Property(f => f.FeatureName).IsRequired();
-            });
+            });*/
 
             modelBuilder.Entity<OpenDay>(od =>
             {
@@ -141,16 +141,16 @@ namespace RealWord.Data
                 s.Property(s => s.ServiceName).IsRequired();
             });
 
-            modelBuilder.Entity<Tag>(t =>
+           /* modelBuilder.Entity<Tag>(t =>
             {
                 t.HasKey(t => t.TagId);
-            });
+            });*/
 
             modelBuilder.Entity<Review>(r =>
             {
                 r.HasKey(r => r.ReviewId);
 
-                r.Property(r => r.Body).IsRequired();
+                r.Property(r => r.ReviewText).IsRequired();
                 r.Property(r => r.CreatedAt).IsRequired();
 
                 r.HasMany<Photo>(r => r.Photos)

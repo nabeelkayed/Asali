@@ -15,15 +15,18 @@ namespace RealWord.Core.Services
     public class ReviewService : IReviewService
     {
         private readonly IReviewRepository _IReviewRepository;
+        private readonly IBusinessRepository _IBusinessRepository;
         private readonly IBusinessService _IBusinessService;
         private readonly IUserService _IUserService;
         private readonly IMapper _mapper;
 
-        public ReviewService(IReviewRepository reviewRepository,
+        public ReviewService(IReviewRepository reviewRepository, IBusinessRepository businessRepository,
         IBusinessService businessService, IUserService userService, IMapper mapper)
         {
             _IReviewRepository = reviewRepository ??
                throw new ArgumentNullException(nameof(reviewRepository));
+            _IBusinessRepository = businessRepository ??
+               throw new ArgumentNullException(nameof(businessRepository));
             _IBusinessService = businessService ??
                throw new ArgumentNullException(nameof(businessService));
             _IUserService = userService ??
@@ -70,23 +73,22 @@ namespace RealWord.Core.Services
             return reviewToReturn;
         }
 
-        public async Task<IEnumerable<ReviewDto>> GetReviewsForBusinessAsync(string businessUsername)
+        public async Task<IEnumerable<ReviewDto>> GetReviewsForBusinessAsync(Guid businessId)
         {
-            var businessId = await _IBusinessService.GetCurrentBusinessIdAsync(businessUsername);
-            if (businessId == Guid.Empty)
+            var reviews = await _IReviewRepository.GetReviewsForBusinessAsync(businessId);
+            if (reviews == null)
             {
                 return null;
             }
 
-            var reviews = await _IReviewRepository.GetReviewsForBusinessAsync(businessId);
-
             var reviewsToReturn = new List<ReviewDto>();
-            var currentUserId = await _IUserService.GetCurrentUserIdAsync();
-
+            
             foreach (var review in reviews)
             {
-                var reviewsDto = MapReview(currentUserId, review);
-                reviewsToReturn.Add(reviewsDto);
+                var reviewDto = _mapper.Map<ReviewDto>(review);
+                var profileDto = _mapper.Map<UserProfileDto>(review.User);
+                reviewDto.User = profileDto;
+                reviewsToReturn.Add(reviewDto);
             }
 
             return reviewsToReturn;
@@ -95,7 +97,6 @@ namespace RealWord.Core.Services
         public async Task<IEnumerable<ReviewDto>> GetFeedReviewsAsync(FeedReviewsParameters feedReviewsParameters)
         {
             var currentUserId = await _IUserService.GetCurrentUserIdAsync();
-
             var reviews = await _IReviewRepository.GetFeedReviewsAsync(currentUserId, feedReviewsParameters);
             if (!reviews.Any())
             {
@@ -105,183 +106,168 @@ namespace RealWord.Core.Services
             var reviewsToReturn = new List<ReviewDto>();
             foreach (var review in reviews)
             {
-                var reviewDto = MapReview(currentUserId, review );
+                var reviewDto = MapReview(currentUserId, review);
                 reviewsToReturn.Add(reviewDto);
             }
 
             return reviewsToReturn;
         }
 
-        public async Task CreateReviewForBusinessAsync(string businessUsername, ReviewForCreationDto reviewForCreationDto)
+        public async Task<bool> CreateReviewForBusinessAsync(Guid businessId, ReviewForCreationDto reviewForCreationDto)
         {
-            var businessId = await _IBusinessService.GetCurrentBusinessIdAsync(businessUsername);
+          /*  var businessId = await _IBusinessService.GetCurrentBusinessIdAsync(businessId);
             if (businessId == Guid.Empty)
             {
-               // return null;
-            }
+                return false;
+            }*/
+
+            var currentUserId = await _IUserService.GetCurrentUserIdAsync();
 
             var reviewEntityForCreation = _mapper.Map<Review>(reviewForCreationDto);
 
-            reviewEntityForCreation.ReviewId = Guid.NewGuid();
-
-            var currentUserId = await _IUserService.GetCurrentUserIdAsync();
-            reviewEntityForCreation.UserId = currentUserId;
-
-            reviewEntityForCreation.BusinessId = businessId;
-
-            var timeStamp = DateTime.Now;
-            reviewEntityForCreation.CreatedAt = timeStamp;
-
-            await _IReviewRepository.CreateReviewAsync(reviewEntityForCreation);
+            await _IReviewRepository.CreateReviewAsync(businessId, currentUserId, reviewEntityForCreation);
             await _IReviewRepository.SaveChangesAsync();
 
-            //var createdReviewToreturn = MapReview(currentUserId, reviewEntityForCreation);
-            //return createdReviewToreturn;
+            return true;
         }
 
-        public async Task DeleteReviewAsync(Guid reviewId)
-        {
-            var review = await _IReviewRepository.GetReviewAsync(reviewId);
-
-            _IReviewRepository.DeleteReview(review);
-            await _IReviewRepository.SaveChangesAsync();
-        }
-        public async Task CoolReviewAsync(Guid reviewId)
+        public async Task<bool> DeleteReviewAsync(Guid reviewId)
         {
             var review = await _IReviewRepository.GetReviewAsync(reviewId);
             if (review == null)
             {
-               // return null;
+                return false;
+            }
+
+            _IReviewRepository.DeleteReview(review);
+            await _IReviewRepository.SaveChangesAsync();
+
+            return true;
+        }
+        public async Task<bool> CoolReviewAsync(Guid reviewId)
+        {
+            var review = await _IReviewRepository.GetReviewAsync(reviewId);
+            if (review == null)
+            {
+                return false;
             }
 
             var currentUserId = await _IUserService.GetCurrentUserIdAsync();
-
             var isCool = await _IReviewRepository.IsCoolAsync(currentUserId, review.ReviewId);
             if (isCool)
             {
-                //return null;
+                return false;
             }
 
             await _IReviewRepository.CoolReviewAsync(currentUserId, review.ReviewId);
             await _IReviewRepository.SaveChangesAsync();
 
-          //  var coolReviewToReturn = MapReview(currentUserId, review);
-         //   return coolReviewToReturn;
+            return true;
         }
 
-        public async Task UncoolReviewAsync(Guid reviewId)
+        public async Task<bool> UncoolReviewAsync(Guid reviewId)
         {
             var review = await _IReviewRepository.GetReviewAsync(reviewId);
             if (review == null)
             {
-               // return null;
+                return false;
             }
 
             var currentUserId = await _IUserService.GetCurrentUserIdAsync();
-
             var isCool = await _IReviewRepository.IsCoolAsync(currentUserId, review.ReviewId);
             if (isCool)
             {
-                //return null;
+                return false;
             }
 
             _IReviewRepository.UncoolReviewAsync(currentUserId, review.ReviewId);
             await _IReviewRepository.SaveChangesAsync();
 
-       //     var uncoolReviewToReturn = MapReview(currentUserId, review);
-         //   return uncoolReviewToReturn;
+            return true;
         }
 
-        public async Task UsefulReviewAsync(Guid reviewId)
+        public async Task<bool> UsefulReviewAsync(Guid reviewId)
         {
             var review = await _IReviewRepository.GetReviewAsync(reviewId);
             if (review == null)
-            { 
-               // return null;
+            {
+                return false;
             }
 
             var currentUserId = await _IUserService.GetCurrentUserIdAsync();
-
             var isUseful = await _IReviewRepository.IsUsefulAsync(currentUserId, review.ReviewId);
             if (isUseful)
             {
-               // return null;
+                return false;
             }
 
             await _IReviewRepository.UsefulReviewAsync(currentUserId, review.ReviewId);
             await _IReviewRepository.SaveChangesAsync();
 
-            //var usefulReviewToReturn = MapReview(currentUserId, review);
-            //return usefulReviewToReturn;
+            return true;
         }
 
-        public async Task UnusefulReviewAsync(Guid reviewId)
+        public async Task<bool> UnusefulReviewAsync(Guid reviewId)
         {
             var review = await _IReviewRepository.GetReviewAsync(reviewId);
             if (review == null)
             {
-               // return null;
+                return false;
             }
 
             var currentUserId = await _IUserService.GetCurrentUserIdAsync();
-
             var isUseful = await _IReviewRepository.IsUsefulAsync(currentUserId, review.ReviewId);
             if (isUseful)
             {
-               // return null;
+                return false;
             }
 
             _IReviewRepository.UnusfulReviewAsync(currentUserId, review.ReviewId);
             await _IReviewRepository.SaveChangesAsync();
 
-            //var unusfulReviewToReturn = MapReview(currentUserId, review);
-            //return unusfulReviewToReturn;
+            return true;
         }
 
-        public async Task FunnyReviewAsync(Guid reviewId)
+        public async Task<bool> FunnyReviewAsync(Guid reviewId)
         {
             var review = await _IReviewRepository.GetReviewAsync(reviewId);
             if (review == null)
             {
-               // return null;
+                return false;
             }
 
             var currentUserId = await _IUserService.GetCurrentUserIdAsync();
-
             var isFunny = await _IReviewRepository.IsFunnyAsync(currentUserId, review.ReviewId);
             if (isFunny)
             {
-                //return null;
+                return false;
             }
 
             await _IReviewRepository.FunnyReviewAsync(currentUserId, review.ReviewId);
             await _IReviewRepository.SaveChangesAsync();
 
-           // var funnyReviewAsyncToReturn = MapReview(currentUserId, review);
-           // return funnyReviewAsyncToReturn;
+            return true;
         }
 
-        public async Task UnfunnyReviewAsync(Guid reviewId)
+        public async Task<bool> UnfunnyReviewAsync(Guid reviewId)
         {
             var review = await _IReviewRepository.GetReviewAsync(reviewId);
             if (review == null)
             {
-                //return null;
+                return false;
             }
 
             var currentUserId = await _IUserService.GetCurrentUserIdAsync();
-
             var isFunny = await _IReviewRepository.IsFunnyAsync(currentUserId, review.ReviewId);
             if (isFunny)
             {
-               // return null;
+                return false;
             }
 
             _IReviewRepository.UnfunnyReviewAsync(currentUserId, review.ReviewId);
             await _IReviewRepository.SaveChangesAsync();
 
-          //  var unfunnyReviewAsyncToReturn = MapReview(currentUserId, review);
-            //return unfunnyReviewAsyncToReturn;
+            return true;
         }
         private ReviewDto MapReview(Guid currentUserId, Review review)
         {

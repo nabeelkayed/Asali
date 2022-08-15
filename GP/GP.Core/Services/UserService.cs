@@ -44,8 +44,9 @@ namespace RealWord.Core.Services
                 return null;
             }
 
-            var userToReturn = _mapper.Map<UserDto>(userlogedin);//يجب التأكد
+            var userToReturn = _mapper.Map<UserDto>(userlogedin);
             userToReturn.Token = _IUserAuth.Generate(userlogedin);
+            
             return userToReturn;
         }
 
@@ -55,7 +56,8 @@ namespace RealWord.Core.Services
             if (!String.IsNullOrEmpty(currentUsername))
             {
                 var currentUser = await _IUserRepository.GetUserAsNoTrackingAsync(currentUsername);
-                var userToReturn = _mapper.Map<UserProfileDto>(currentUser);//جيب التأكد
+                var userToReturn = _mapper.Map<UserProfileDto>(currentUser);
+                
                 return userToReturn;
             }
 
@@ -86,11 +88,11 @@ namespace RealWord.Core.Services
 
             var currentUserId = await GetCurrentUserIdAsync();
 
-            var userProfileToReturn = _mapper.Map<UserProfileDto>(user, a => a.Items["currentUserId"] = currentUserId);//يجب التأكد
+            var userProfileToReturn = _mapper.Map<UserProfileDto>(user, a => a.Items["currentUserId"] = currentUserId);
             return userProfileToReturn;
         }
 
-        public async Task CreateUserAsync(UserForCreationDto userForCreation)
+        public async Task<bool> CreateUserAsync(UserForCreationDto userForCreation)
         {
             userForCreation.Username = userForCreation.Username.ToLower();
             userForCreation.Email = userForCreation.Email.ToLower();
@@ -99,62 +101,43 @@ namespace RealWord.Core.Services
             var userExists = await _IUserRepository.UserExistsAsync(userForCreation.Username);
             if (userExists)
             {
-                // return null;//return a messaage to till that the user name is used
+                return false;
             }
 
             var emailNotAvailable = await _IUserRepository.EmailAvailableAsync(userForCreation.Email);
             if (emailNotAvailable)
             {
-                // return null;//return a messaage to till that the email is used
+                return false;
             }
 
-            var userEntityForCreation = _mapper.Map<User>(userForCreation);// يجب التأكد
+            var userEntityForCreation = _mapper.Map<User>(userForCreation);
+            
             await _IUserRepository.CreateUserAsync(userEntityForCreation);
             await _IUserRepository.SaveChangesAsync();
-
-            //    var createdUserToReturn = _mapper.Map<UserDto>(userEntityForCreation);
-            //  return createdUserToReturn;
+            
+            return true;
         }
 
-        public async Task UpdateUserAsync(UserForUpdateDto userForUpdate)
+        public async Task<bool> UpdateUserAsync(UserForUpdateDto userForUpdate)
         {
             var currentUser = await GetCurrentUserAsync();
             var updatedUser = await _IUserRepository.GetUserAsync(currentUser.Username);
 
-            var userEntityForUpdate = _mapper.Map<User>(userForUpdate);//لا يوجد له داعي
+            var userEntityForUpdate = _mapper.Map<User>(userForUpdate);
 
-            if (!string.IsNullOrWhiteSpace(userEntityForUpdate.Email))
+            var emailNotAvailable = await _IUserRepository.EmailAvailableAsync(userEntityForUpdate.Email);
+            if (emailNotAvailable)
             {
-                var emailNotAvailable = await _IUserRepository.EmailAvailableAsync(userEntityForUpdate.Email);
-                if (emailNotAvailable)
-                {
-                    // return null; //return massage that email is not avalable
-                }
-
-                updatedUser.Email = userEntityForUpdate.Email.ToLower();
-            }
-
-            if (!string.IsNullOrWhiteSpace(userEntityForUpdate.Photo))
-            {
-                updatedUser.Photo = userEntityForUpdate.Photo;
-            }
-            if (!string.IsNullOrWhiteSpace(userEntityForUpdate.Bio))
-            {
-                updatedUser.Bio = userEntityForUpdate.Bio;
-            }
-            if (!string.IsNullOrWhiteSpace(userEntityForUpdate.Username))
-            {
-                updatedUser.Username = userEntityForUpdate.Username.ToLower();
+                return false;
             }
 
             _IUserRepository.UpdateUser(updatedUser, userEntityForUpdate);
             await _IUserRepository.SaveChangesAsync();
-
-            //var UpdatedUserToReturn = _mapper.Map<UserDto>(updatedUser);
-            //return UpdatedUserToReturn;
+           
+            return true; 
         }
 
-        public async Task UpdateUserPasswordAsync(UserForUpdatePasswordDto userForUpdatePassword)
+        public async Task<bool> UpdateUserPasswordAsync(UserForUpdatePasswordDto userForUpdatePassword)
         {
             var currentUser = await GetCurrentUserAsync();
             var updatedUser = await _IUserRepository.GetUserAsync(currentUser.Username);
@@ -162,11 +145,14 @@ namespace RealWord.Core.Services
             if (updatedUser.Password == userForUpdatePassword.OldPassword)
             {
                 updatedUser.Password = userForUpdatePassword.NewPassword;
-            }
-           
-            _IUserRepository.UpdateUserPassword(updatedUser);
-            await _IUserRepository.SaveChangesAsync();
-        }
 
+                _IUserRepository.UpdateUserPassword(updatedUser);
+                await _IUserRepository.SaveChangesAsync();
+                
+                return true;
+            }
+
+            return false;
+        }
     }
 }

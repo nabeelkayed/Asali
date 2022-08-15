@@ -13,9 +13,15 @@ namespace RealWord.Core.Profiles
         public ReviewProfile()
         {
             CreateMap<Review, ReviewDto>()
-              /*  .ForMember(
-                    dest => dest.Id,
-                    opt => opt.MapFrom(src => src.CommentId))*/;
+               .ForMember(
+                    dest => dest.FunnyCount,
+                    opt => opt.MapFrom(src => src.Funny.Count()))
+                 .ForMember(
+                    dest => dest.CoolCount,
+                    opt => opt.MapFrom(src => src.Cool.Count()))
+                  .ForMember(
+                    dest => dest.UsefulCount,
+                    opt => opt.MapFrom(src => src.Useful.Count()));
 
             CreateMap<ReviewForCreationDto, Review>();
         }

@@ -25,10 +25,10 @@ namespace GP.Web.Controllers
         }
 
         [AllowAnonymous] //othenticational optinal or just in the business side
-        [HttpGet("{businessUsername}/reviews")]
-        public async Task<ActionResult<IEnumerable<ReviewDto>>> GetReviewsForBusiness(string businessUsername)
+        [HttpGet("{businessId}/reviews")]
+        public async Task<ActionResult<IEnumerable<ReviewDto>>> GetReviewsForBusiness(Guid businessId)
         {
-            var reviewsToReturn = await _IReviewService.GetReviewsForBusinessAsync(businessUsername);
+            var reviewsToReturn = await _IReviewService.GetReviewsForBusinessAsync(businessId);
             if (reviewsToReturn == null)
             {
                 return NotFound();
@@ -49,10 +49,10 @@ namespace GP.Web.Controllers
             return Ok(new { reviews = reviewsToReturn, reviewsCount = reviewsToReturn.Count() });
         }
 
-        [HttpPost("{businessUsername}/reviews")]
-        public async Task<IActionResult> CreateReviewForBusiness(string businessUsername, ReviewForCreationDto reviewForCreationDto)
+        [HttpPost("{businessId}/reviews")]
+        public async Task<IActionResult> CreateReviewForBusiness(Guid businessId, ReviewForCreationDto reviewForCreationDto)
         {
-            await _IReviewService.CreateReviewForBusinessAsync(businessUsername, reviewForCreationDto);
+            await _IReviewService.CreateReviewForBusinessAsync(businessId, reviewForCreationDto);
             return Ok();
         }
 

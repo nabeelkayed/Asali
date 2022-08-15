@@ -79,6 +79,45 @@ namespace RealWord.Data.Repositories
         public void UpdateUser(User updatedUser, User userForUpdate)
         {
 
+            if (!string.IsNullOrWhiteSpace(userForUpdate.FirstName))
+            {
+                updatedUser.FirstName = userForUpdate.FirstName.ToLower();
+            }
+
+            if (!string.IsNullOrWhiteSpace(userForUpdate.LastName))
+            {
+                updatedUser.LastName = userForUpdate.LastName.ToLower();
+            }
+
+            if (!string.IsNullOrWhiteSpace(userForUpdate.Username))
+            {
+                updatedUser.Username = userForUpdate.Username.ToLower();
+            }
+
+            if (!string.IsNullOrWhiteSpace(userForUpdate.Email))
+            {
+                updatedUser.Email = userForUpdate.Email.ToLower();
+            }
+
+            if (!string.IsNullOrWhiteSpace(userForUpdate.Photo))
+            {
+                updatedUser.Photo = userForUpdate.Photo;
+            }
+
+            if (!string.IsNullOrWhiteSpace(userForUpdate.Bio))
+            {
+                updatedUser.Bio = userForUpdate.Bio;
+            }
+
+            if (!string.IsNullOrWhiteSpace(userForUpdate.HeadLine))
+            {
+                updatedUser.HeadLine = userForUpdate.HeadLine.ToLower();
+            }
+
+            if (!string.IsNullOrWhiteSpace(userForUpdate.Location))
+            {
+                updatedUser.Location = userForUpdate.Location.ToLower();
+            }
         }
 
         public void UpdateUserPassword(User updatedUser)

@@ -6,6 +6,7 @@ namespace GP.Core.Models
 {
     public class BusinessProfileDto
     {
+        public Guid BusinessId { get; set; }
         public string BusinessName { get; set; }
         public string Location { get; set; }
         public string Bio { get; set; }
@@ -14,6 +15,5 @@ namespace GP.Core.Models
         public string Category { get; set; }
         public string Map { get; set; }
         public string PhoneNumber { get; set; }
-
     }
 }

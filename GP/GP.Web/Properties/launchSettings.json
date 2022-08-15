@@ -1,19 +1,24 @@
 {
   "iisSettings": {
     "windowsAuthentication": false,
-    "anonymousAuthentication": false,
+    "anonymousAuthentication": true,
+    "iis": {
+      "applicationUrl": "http://localhost/GP.Web",
+      "sslPort": 0
+    },
     "iisExpress": {
-      "applicationUrl": "http://localhost:6183",
+      "applicationUrl": "http://localhost:5000",
       "sslPort": 0
     }
   },
   "profiles": {
     "IIS Express": {
-      "commandName": "Project",
+      "commandName": "IISExpress",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "http://localhost:50001"
+      "applicationUrl": "http://localhost:50001",
+      "jsWebView2Debugging": false
     },
     "GP.Web": {
       "commandName": "Project",

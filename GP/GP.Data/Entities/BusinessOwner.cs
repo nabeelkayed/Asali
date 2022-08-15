@@ -13,6 +13,7 @@ namespace GP.Data.Entities
         public string Email { get; set; }
         public string Password { get; set; }
         public string Photo { get; set; }
+        public bool Setup { get; set; }
 
         public Guid BusinessId { get; set; }
         public Business Business { get; set; }

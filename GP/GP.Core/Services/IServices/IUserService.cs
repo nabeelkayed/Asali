@@ -11,8 +11,8 @@ namespace RealWord.Core.Services
         Task<UserProfileDto> GetCurrentUserAsync();
         Task<Guid> GetCurrentUserIdAsync();
         Task<UserProfileDto> GetUserProfileAsync(string username);
-        Task CreateUserAsync(UserForCreationDto userForCreation);
-        Task UpdateUserAsync(UserForUpdateDto userForUpdate);
-        Task UpdateUserPasswordAsync(UserForUpdatePasswordDto userForUpdatePassword);
+        Task <bool> CreateUserAsync(UserForCreationDto userForCreation);
+        Task<bool> UpdateUserAsync(UserForUpdateDto userForUpdate);
+        Task<bool> UpdateUserPasswordAsync(UserForUpdatePasswordDto userForUpdatePassword);
     }
 }

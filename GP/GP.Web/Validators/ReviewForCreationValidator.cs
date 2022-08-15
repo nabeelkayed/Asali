@@ -11,7 +11,7 @@ namespace RealWord.Web.Validators
     {
         public ReviewForCreationValidator()
         {
-            RuleFor(c => c.Body).NotEmpty();
+            RuleFor(c => c.ReviewText).NotEmpty();
             RuleFor(c => c.Rate).NotEmpty();
         }
     }

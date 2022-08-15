@@ -30,12 +30,13 @@ namespace GP.Web.Controllers
         public async Task<ActionResult<UserDto>> UserLogin(UserLoginDto userLogin)
         {
             var logedinUserToReturn = await _IUserService.LoginUserAsync(userLogin);
-            if (logedinUserToReturn == null)
+            if (logedinUserToReturn != null)
             {
-                return NotFound();
+                return Ok(logedinUserToReturn);
             }
 
-            return Ok(logedinUserToReturn);
+            //may be enter
+            return NotFound("The email or the password is not correct");
         }
 
         [HttpGet("user")]
@@ -44,10 +45,11 @@ namespace GP.Web.Controllers
             var userToReturn = await _IUserService.GetCurrentUserAsync();
             if (userToReturn == null)
             {
-                return Unauthorized();
+                return Ok(userToReturn);
             }
 
-            return Ok(userToReturn);
+            //will not enter becouse we don't call this api unless we loged in
+            return Unauthorized();
         }
 
         [AllowAnonymous]
@@ -55,34 +57,53 @@ namespace GP.Web.Controllers
         public async Task<ActionResult<UserProfileDto>> GetUserProfile(string username)
         {
             var userToReturn = await _IUserService.GetUserProfileAsync(username);
-            if (userToReturn == null)
+            if (userToReturn != null) 
             {
-                return Unauthorized();
+                return Ok(userToReturn);
             }
 
-            return Ok(userToReturn);
+            //may be enter if the user name is not exist
+            return NotFound("The user does not exist");
         }
 
         [AllowAnonymous]
         [HttpPost("users")]
         public async Task<IActionResult> CreateUser(UserForCreationDto userForCreation)
         {
-            await _IUserService.CreateUserAsync(userForCreation);
-            return Ok();
+            bool userCreated = await _IUserService.CreateUserAsync(userForCreation);
+            if (userCreated)
+            {
+                return Ok();
+            }
+
+            //will not enter
+            return NotFound("The username or email is alredy used");
         }
 
         [HttpPut("user")]
         public async Task<IActionResult> UpdateUser(UserForUpdateDto userForUpdate)
         {
-            await _IUserService.UpdateUserAsync(userForUpdate);
-            return Ok();
+            bool userUpdated = await _IUserService.UpdateUserAsync(userForUpdate);
+            if (userUpdated) 
+            {
+                return Ok();
+            }
+
+            //will not enter
+            return NotFound("The email dose not exist");
         }
 
         [HttpPut("user/password")]
         public async Task<IActionResult> UpdateUserPassword(UserForUpdatePasswordDto userForUpdatePassword)
         {
-            await _IUserService.UpdateUserPasswordAsync(userForUpdatePassword);
-            return Ok();
+            bool userPasswordUpdated = await _IUserService.UpdateUserPasswordAsync(userForUpdatePassword);
+            if (userPasswordUpdated)
+            {
+                return Ok();
+            }
+
+            //will not enter
+            return NotFound("The old password in not correct");
         }
     }
 }

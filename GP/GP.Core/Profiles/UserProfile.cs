@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using GP.Core.Models;
 
 namespace RealWord.Core.Profiles
 {
@@ -13,9 +14,12 @@ namespace RealWord.Core.Profiles
         public UserProfile()
         {
             CreateMap<User, UserDto>();
-            CreateMap<UserLoginDto, User>();
-            CreateMap<UserForCreationDto, User>();
-            CreateMap<UserForUpdateDto, User>();
+            CreateMap<User, UserProfileDto>();
+
+            CreateMap<UserLoginDto, User>();//done
+            CreateMap<UserForCreationDto, User>();//done
+            CreateMap<UserForUpdateDto, User>();//done if we change location we should change it
+            CreateMap<UserForUpdatePasswordDto, User>();
         }
     }
 }

@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RealWord.Data;
 
 namespace GP.Data.Migrations
 {
     [DbContext(typeof(GPDbContext))]
-    partial class GPDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220813050702_MyFirstMigration")]
+    partial class MyFirstMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -45,9 +47,6 @@ namespace GP.Data.Migrations
                     b.Property<string>("Photo")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("Setup")
-                        .HasColumnType("bit");
-
                     b.HasKey("BusinessOwnerId");
 
                     b.HasIndex("BusinessId")
@@ -68,6 +67,9 @@ namespace GP.Data.Migrations
                     b.Property<string>("BusinessName")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("BusinessUsername")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Category")
                         .HasColumnType("nvarchar(max)");
 
@@ -81,6 +83,9 @@ namespace GP.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Setup")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Website")

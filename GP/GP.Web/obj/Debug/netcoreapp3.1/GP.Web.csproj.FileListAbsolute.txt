@@ -100,3 +100,4 @@ C:\Users\hp\Desktop\GP\GP\GP.Web\obj\Debug\netcoreapp3.1\GP.Web.csproj.CopyCompl
 C:\Users\hp\Desktop\GP\GP\GP.Web\obj\Debug\netcoreapp3.1\GP.Web.dll
 C:\Users\hp\Desktop\GP\GP\GP.Web\obj\Debug\netcoreapp3.1\GP.Web.pdb
 C:\Users\hp\Desktop\GP\GP\GP.Web\obj\Debug\netcoreapp3.1\GP.Web.genruntimeconfig.cache
+C:\Users\hp\Desktop\GP\GP\GP.Web\obj\Debug\netcoreapp3.1\GP.Web.MvcApplicationPartsAssemblyInfo.cs

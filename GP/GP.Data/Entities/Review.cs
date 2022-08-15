@@ -14,7 +14,7 @@ namespace RealWord.Data.Entities
         }
 
         public Guid ReviewId { get; set; }
-        public string Body { get; set; }
+        public string ReviewText { get; set; }
         public int Rate { get; set; }
         public DateTime CreatedAt { get; set; }
 

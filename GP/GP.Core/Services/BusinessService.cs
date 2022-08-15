@@ -29,7 +29,6 @@ namespace GP.Core.Services
         public BusinessService(IBusinessRepository businessRepository, IUserService userService,
          ITagService tagService, IBusinessAuth businessAuth, IHttpContextAccessor accessor, IMapper mapper)
         {
-
             _IBusinessRepository = businessRepository ??
                 throw new ArgumentNullException(nameof(businessRepository));
             _IUserService = userService ??
@@ -72,16 +71,19 @@ namespace GP.Core.Services
             }
 
             var businessToReturn = _mapper.Map<BusinessDto>(businesslogedin);
+            /*var business1 = await _IBusinessRepository.GetBusinessByIdAsync(businesslogedin.BusinessId);
+            businessToReturn.BusinessName = business1.BusinessName;*/
             businessToReturn.Token = _IBusinessAuth.Generate(businesslogedin);
+
             return businessToReturn;
         }
 
         public async Task<BusinessProfileDto> GetCurrentBusinessAsync()
         {
-            var currentBusinessUsername = _accessor?.HttpContext?.User?.Claims?.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            if (!String.IsNullOrEmpty(currentBusinessUsername))
+            var currentBusinessOwnerEmail = _accessor?.HttpContext?.User?.Claims?.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+            if (!String.IsNullOrEmpty(currentBusinessOwnerEmail))
             {
-                var currentBusiness = await _IBusinessRepository.GetBusinessAsNoTrackingAsync(currentBusinessUsername);
+                var currentBusiness = await _IBusinessRepository.GetBusinessAsNoTrackingAsync(currentBusinessOwnerEmail);
                 var businessToReturn = _mapper.Map<BusinessProfileDto>(currentBusiness);
                 return businessToReturn;
             }
@@ -89,7 +91,7 @@ namespace GP.Core.Services
             return null;
         }
 
-        public async Task<Guid> GetCurrentBusinessIdAsync(string businessUsername)
+        public async Task<Guid> GetCurrentBusinessIdAsync(string businessUsername) //see the user function
         {
             var business = await _IBusinessRepository.GetBusinessAsync(businessUsername);
 
@@ -105,7 +107,7 @@ namespace GP.Core.Services
                 return null;
             }
 
-            var businessToReturn = MapBusiness(business, Guid.Empty);
+            var businessToReturn = MapBusiness(business, Guid.Empty);//map business to business profile
             return businessToReturn;
         }
 
@@ -129,209 +131,191 @@ namespace GP.Core.Services
             return businessesToReturn;
         }
 
-        public async Task<List<Photo>> GetPhotosForBusinessAsync(string businessUsername)
+        public async Task<List<Photo>> GetPhotosForBusinessAsync(Guid businessId)
         {
-            var isExists = await _IBusinessRepository.BusinessExistsAsync(businessUsername);
+           /* var isExists = await _IBusinessRepository.BusinessExistsAsync(businessId);
             if (!isExists)
             {
                 return null;
             }
+           */
 
-            var photos = await _IBusinessRepository.GetPhotosForBusinessAsync(businessUsername);
+            var photos = await _IBusinessRepository.GetPhotosForBusinessAsync(businessId);
             //we should add maping
             return photos;
         }
 
-        public async Task<List<UserProfileDto>> GetFollowersForBusinessAsync(string businessUsername)
+        public async Task<List<UserProfileDto>> GetFollowersForBusinessAsync(Guid businessId)
         {
-            var isExist = await _IBusinessRepository.BusinessExistsAsync(businessUsername);
+           /* var isExist = await _IBusinessRepository.BusinessExistsAsync(businessUsername);
             if (!isExist)
             {
                 return null;
-            }
-            var followers = await _IBusinessRepository.GetFollowersForBusinessAsync(businessUsername);
+            }*/
 
-            var followersToReturn = new List<UserProfileDto>();
-            var currentUserId = await _IUserService.GetCurrentUserIdAsync();
+            var followers = await _IBusinessRepository.GetFollowersForBusinessAsync(businessId);
 
-            foreach (var follower in followers)
+            var followersToReturn = _mapper.Map<List<UserProfileDto>>(followers);
+
+           // var followersToReturn = new List<UserProfileDto>();
+            //var currentUserId = await _IUserService.GetCurrentUserIdAsync();
+
+           /* foreach (var follower in followers)
             {
                 var userDto = MapUser(follower, currentUserId);
+
+
+                var businessToReturn = _mapper.Map<BusinessProfileDto>(business, b => b.Items["currentUserId"] = currentUserId);
+                // var profileDto = _mapper.Map<BusinessProfileDto>(business.User, b => b.Items["currentUserId"] = currentUserId);
+                // articleToReturn.Author = profileDto;
+
+
                 followersToReturn.Add(userDto);
-            }
+            }*/
 
             return followersToReturn;
         }
 
-        public async Task CreateBusinessAsync(BusinessForCreationDto businessForCreation)
+        public async Task<bool> CreateBusinessAsync(BusinessForCreationDto businessForCreation)
         {
+            businessForCreation.Email = businessForCreation.Email.ToLower();
+            businessForCreation.Password = businessForCreation.Password.GetHash();
+
+            var emailNotAvailable = await _IBusinessRepository.EmailAvailableAsync(businessForCreation.Email);
+            if (emailNotAvailable)
+            {
+                return false;
+            }
+
             var businessOwnerEntityForCreation = _mapper.Map<BusinessOwner>(businessForCreation);
-
-            businessOwnerEntityForCreation.BusinessOwnerId = Guid.NewGuid();
-
-            //var currentUserId = await _IUserService.GetCurrentUserIdAsync();
 
             await _IBusinessRepository.CreateBusinessAsync(businessOwnerEntityForCreation);
             await _IBusinessRepository.SaveChangesAsync();
 
-           /* if (businessForCreation.TagList != null && businessForCreation.TagList.Any())
-            {
-                await _ITagService.CreateTags(businessForCreation.TagList, businessEntityForCreation.BusinessId);
-            }*/
+            return true;
 
-           // var createdBusiness = await _IBusinessRepository.GetBusinessAsync(businessEntityForCreation.BusinessUsername);
-           // var createdBusinessToReturn = MapBusiness(createdBusiness, currentUserId);
-            //return createdBusinessToReturn;
+            /* if (businessForCreation.TagList != null && businessForCreation.TagList.Any())
+             {
+                 await _ITagService.CreateTags(businessForCreation.TagList, businessEntityForCreation.BusinessId);
+             }*/
         }
 
-        public async Task SetupBusinessProfile(BusinessProfileSetupDto businessProfileSetup)
+        public async Task<bool> SetupBusinessProfileAsync(BusinessProfileSetupDto businessProfileSetup)
         {
             var currentBusiness = await GetCurrentBusinessAsync();
-            var updatedBusiness = await _IBusinessRepository.GetBusinessAsync(currentBusiness.BusinessName);
+            var updatedBusiness = await _IBusinessRepository.GetBusinessByIdAsync(currentBusiness.BusinessId);
 
             var businessEntityForUpdate = _mapper.Map<Business>(businessProfileSetup);
 
-            if (!string.IsNullOrWhiteSpace(businessEntityForUpdate.Bio))
-            {
-                updatedBusiness.Bio = businessEntityForUpdate.Bio;
-            }
-            if (!string.IsNullOrWhiteSpace(businessEntityForUpdate.Location))
-            {
-                updatedBusiness.Location = businessEntityForUpdate.Location;
-            }
+            _IBusinessRepository.SetupBusinessProfile(updatedBusiness, businessEntityForUpdate);
 
-            _IBusinessRepository.UpdateBusiness(updatedBusiness, businessEntityForUpdate);
             await _IBusinessRepository.SaveChangesAsync();
 
-           // var UpdatedBusinessToReturn = MapBusiness(updatedBusiness, /*currentUserId*/Guid.Empty);
-            //return UpdatedBusinessToReturn;
+            return true;
         }
 
-        public async Task UpdateBusinessProfileAsync(BusinessProfileForUpdateDto businessProfileForUpdate)
+        public async Task<bool> UpdateBusinessProfileAsync(BusinessProfileForUpdateDto businessProfileForUpdate)
         {
             var currentBusiness = await GetCurrentBusinessAsync();
-
             var updatedBusiness = await _IBusinessRepository.GetBusinessAsync(currentBusiness.BusinessName);
-          //  var currentUserId = await _IUserService.GetCurrentUserIdAsync();
 
             var businessEntityForUpdate = _mapper.Map<Business>(businessProfileForUpdate);
 
-            if (!string.IsNullOrWhiteSpace(businessProfileForUpdate.Bio))
-            {
-                updatedBusiness.Bio = businessProfileForUpdate.Bio;
-            }
-            if (!string.IsNullOrWhiteSpace(businessProfileForUpdate.Location))
-            {
-                updatedBusiness.Location = businessProfileForUpdate.Location;
-            }
+            _IBusinessRepository.UpdateBusinessProfile(updatedBusiness, businessEntityForUpdate);
+            await _IBusinessRepository.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<bool> UpdateBusinessAsync(BusinessForUpdateDto businessForUpdate)
+        {
+            var currentBusiness = await GetCurrentBusinessAsync();
+            var updatedBusiness = await _IBusinessRepository.GetBusinessOwnerAsync(currentBusiness.BusinessName);
+
+            var businessEntityForUpdate = _mapper.Map<BusinessOwner>(businessForUpdate);
 
             _IBusinessRepository.UpdateBusiness(updatedBusiness, businessEntityForUpdate);
             await _IBusinessRepository.SaveChangesAsync();
 
-            //var UpdatedBusinessToReturn = MapBusiness(updatedBusiness, currentUserId);
-            //return UpdatedBusinessToReturn;
+            return true;
         }
-        public async Task UpdateBusinessAsync(BusinessForUpdateDto businessForUpdate)
+
+        public async Task<bool> UpdateBusinessPasswordAsync(BusinessForUpdatePasswordDto businessForUpdatePassword)
         {
             var currentBusiness = await GetCurrentBusinessAsync();
+            var updatedBusiness = await _IBusinessRepository.GetBusinessOwnerAsync(currentBusiness.BusinessName);
 
-            var updatedBusiness = await _IBusinessRepository.GetBusinessAsync(currentBusiness.BusinessName);
-           // var currentUserId = await _IUserService.GetCurrentUserIdAsync();
-
-            var businessEntityForUpdate = _mapper.Map<Business>(businessForUpdate);
-
-            if (!string.IsNullOrWhiteSpace(businessEntityForUpdate.Bio))
+            var businessOwnerEntityForUpdate = _mapper.Map<BusinessOwner>(businessForUpdatePassword);
+            businessForUpdatePassword.OldPassword= businessForUpdatePassword.OldPassword.GetHash();
+            if (updatedBusiness.Password == businessForUpdatePassword.OldPassword)
             {
-                updatedBusiness.Bio = businessEntityForUpdate.Bio;
+                updatedBusiness.Password = businessForUpdatePassword.NewPassword.GetHash();
+
+                _IBusinessRepository.UpdateBusinessPassword(updatedBusiness, businessOwnerEntityForUpdate);
+                await _IBusinessRepository.SaveChangesAsync();
+
+                return true;
             }
-            if (!string.IsNullOrWhiteSpace(businessEntityForUpdate.Location))
-            {
-                updatedBusiness.Location = businessEntityForUpdate.Location;
-            }
 
-            _IBusinessRepository.UpdateBusiness(updatedBusiness, businessEntityForUpdate);
-            await _IBusinessRepository.SaveChangesAsync();
-
-           // var UpdatedBusinessToReturn = MapBusiness(updatedBusiness, currentUserId);
-            //return UpdatedBusinessToReturn;
-        }
-        public async Task UpdateBusinessPasswordAsync(BusinessForUpdatePasswordDto businessForUpdatePassword)
-        {
-            var currentBusiness = await GetCurrentBusinessAsync();
-
-            var updatedBusiness = await _IBusinessRepository.GetBusinessAsync(currentBusiness.BusinessName);
-            //var updatedBusiness1 = await _IBusinessRepository.GetBusinessOwnerAsync(currentBusiness.BusinessName);
-
-            var businessEntityForUpdate = _mapper.Map<Business>(businessForUpdatePassword);
-
-           /* if (updatedBusiness.Password == businessForUpdatePassword.OldPassword)
-            {
-                updatedBusiness.Password = businessForUpdatePassword.NewPassword;
-            }*///مهم
-
-            //return null;
-            
-            _IBusinessRepository.UpdateBusinessPassword(updatedBusiness, businessEntityForUpdate);
-            await _IBusinessRepository.SaveChangesAsync();
+            return false;
         }
 
-        public async Task DeleteBusinessAsync(string businessUsername)
+        public async Task<bool> DeleteBusinessAsync(string businessUsername)
         {
             var business = await _IBusinessRepository.GetBusinessAsync(businessUsername);
 
             _IBusinessRepository.DeleteBusiness(business);
             await _IBusinessRepository.SaveChangesAsync();
+
+            return true;
         }
 
-        public async Task FollowBusinessAsync(string businessUsername)
+        public async Task<bool> FollowBusinessAsync(string businessUsername)
         {
             var business = await _IBusinessRepository.GetBusinessAsync(businessUsername);
             if (business == null)
             {
-                //return null;
+                return false;
             }
 
             var currentUserId = await _IUserService.GetCurrentUserIdAsync();
-
             var isFavorited = await _IBusinessRepository.IsFollowedAsync(currentUserId, business.BusinessId);
             if (isFavorited)
             {
-                //return null;
+                return false;
             }
 
             await _IBusinessRepository.FollowBusinessAsync(currentUserId, business.BusinessId);
             await _IBusinessRepository.SaveChangesAsync();
 
-            //var followBusinessToReturn = MapBusiness(business, currentUserId);
-            //return followBusinessToReturn;
+            return true;
         }
-        public async Task UnfollowBusinessAsync(string businessUsername)
+
+        public async Task<bool> UnfollowBusinessAsync(string businessUsername)
         {
             var business = await _IBusinessRepository.GetBusinessAsync(businessUsername);
             if (business == null)
             {
-                //return null;
+                return false;
             }
 
             var currentUserId = await _IUserService.GetCurrentUserIdAsync();
-
             var isFavorited = await _IBusinessRepository.IsFollowedAsync(currentUserId, business.BusinessId);
             if (!isFavorited)
             {
-                //return null;
+                return false;
             }
 
             _IBusinessRepository.UnfollowBusiness(currentUserId, business.BusinessId);
             await _IBusinessRepository.SaveChangesAsync();
 
-            //var unfollowedBusinessToReturn = MapBusiness(business, currentUserId);
-            //return unfollowedBusinessToReturn;
+            return true;
         }
         private BusinessProfileDto MapBusiness(Business business, Guid currentUserId)
         {
             var businessToReturn = _mapper.Map<BusinessProfileDto>(business, b => b.Items["currentUserId"] = currentUserId);
-           // var profileDto = _mapper.Map<BusinessProfileDto>(business.User, b => b.Items["currentUserId"] = currentUserId);
-           // articleToReturn.Author = profileDto;
+            // var profileDto = _mapper.Map<BusinessProfileDto>(business.User, b => b.Items["currentUserId"] = currentUserId);
+            // articleToReturn.Author = profileDto;
 
             return businessToReturn;
         }

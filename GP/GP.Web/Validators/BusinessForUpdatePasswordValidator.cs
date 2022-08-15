@@ -12,7 +12,7 @@ namespace RealWord.Web.Validators
     {
         public BusinessForUpdatePasswordValidator()
         {
-            RuleFor(b => b.NewPassword).NotEmpty()
+           /* RuleFor(b => b.NewPassword).NotEmpty()
                                     .MinimumLength(8)
                                     .MaximumLength(16)
                                     .Matches("^(?=.*[0-9])(?=.*[a-zA-Z])([a-zA-Z0-9]+)$")
@@ -21,7 +21,7 @@ namespace RealWord.Web.Validators
                                     .MinimumLength(8)
                                     .MaximumLength(16)
                                     .Matches("^(?=.*[0-9])(?=.*[a-zA-Z])([a-zA-Z0-9]+)$")
-                                    .WithMessage("regex error");
+                                    .WithMessage("regex error");*/
         }
     }
 }

@@ -8,12 +8,12 @@ namespace RealWord.Data.Repositories
 {
     public interface IReviewRepository
     {
-        Task<bool> ReviewExistsAsync(Guid id); 
-        Task<Review> GetReviewAsync(Guid id);
-        Task<List<Review>> GetReviewsForBusinessAsync(Guid articleId);
+        Task<bool> ReviewExistsAsync(Guid reviewId); 
+        Task<Review> GetReviewAsync(Guid reviewId);
+        Task<List<Review>> GetReviewsForBusinessAsync(Guid businessId);
         Task<List<Review>> GetFeedReviewsAsync(Guid currentUserId, FeedReviewsParameters feedReviewsParameters);
-        Task CreateReviewAsync(Review comment);
-        void DeleteReview(Review comment);
+        Task CreateReviewAsync(Guid businessId, Guid currentUserId, Review review);
+        void DeleteReview(Review review);
         Task CoolReviewAsync(Guid currentUserId, Guid reviewId);
         void UncoolReviewAsync(Guid currentUserId, Guid reviewId);
         Task<bool> IsCoolAsync(Guid currentUserId, Guid reviewId);
