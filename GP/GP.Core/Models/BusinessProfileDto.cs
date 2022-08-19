@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GP.Data.Entities;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -15,5 +16,6 @@ namespace GP.Core.Models
         public string Category { get; set; }
         public string Map { get; set; }
         public string PhoneNumber { get; set; }
+        public BusinessOwner BusinessOwner { get; set; }
     }
 }

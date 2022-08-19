@@ -7,7 +7,7 @@ namespace RealWord.Core.Services
 {
     public interface ITagService
     {
-        Task<TagDto> GetTagsAsync();
-        Task CreateTags(List<string> tagList, Guid articleId);
+      /*  Task<TagDto> GetTagsAsync();
+        Task CreateTags(List<string> tagList, Guid articleId);*/
     }
 }

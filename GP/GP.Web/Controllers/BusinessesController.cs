@@ -64,10 +64,10 @@ namespace GP.Web.Controllers
         }
 
         [AllowAnonymous] //othintication optinal we should do it in maping
-        [HttpGet("{businessUsername}")]
-        public async Task<ActionResult<BusinessProfileDto>> GetBusinessProfile(string businessUsername)
+        [HttpGet("{businessId}")]
+        public async Task<ActionResult<BusinessProfileDto>> GetBusinessProfile(Guid businessId)
         {
-            var businessToReturn = await _IBusinessService.GetBusinessProfileAsync(businessUsername);
+            var businessToReturn = await _IBusinessService.GetBusinessProfileAsync(businessId);
             if (businessToReturn == null)
             {
                 return NotFound("The Business is not exist");
@@ -118,7 +118,7 @@ namespace GP.Web.Controllers
         public async Task<ActionResult<BusinessDto>> GetFollowersForBusiness(Guid businessId)
         {
             var followersToReturn = await _IBusinessService.GetFollowersForBusinessAsync(businessId);
-            if (followersToReturn == null)
+            if (followersToReturn.Count()==0)
             {
                 return NotFound();
             }
@@ -186,22 +186,22 @@ namespace GP.Web.Controllers
             return Ok();
         }
 
-        [HttpDelete("{businessUsername}")]
-        public async Task<IActionResult> DeleteBusiness(string businessUsername)
+        [HttpDelete("{businessId}")]
+        public async Task<IActionResult> DeleteBusiness(Guid businessId)
         {
-            var isBusinessExists = await _IBusinessService.BusinessExistsAsync(businessUsername);
+            var isBusinessExists = await _IBusinessService.BusinessExistsAsync(businessId);
             if (!isBusinessExists)
             {
                 return NotFound();
             }
 
-            var isAuthorized = await _IBusinessService.IsAuthorized(businessUsername);
+            var isAuthorized = await _IBusinessService.IsAuthorized(businessId);
             if (!isAuthorized)
             {
                 return Forbid();
             }
 
-            bool deleteBusiness = await _IBusinessService.DeleteBusinessAsync(businessUsername);
+            bool deleteBusiness = await _IBusinessService.DeleteBusinessAsync(businessId);
             if (!deleteBusiness)
             {
                 return NotFound();
@@ -210,10 +210,10 @@ namespace GP.Web.Controllers
             return NoContent();
         }
 
-        [HttpPost("{businessUsername}/follow")]
-        public async Task<IActionResult> FollowBusiness(string businessUsername)
+        [HttpPost("{businessId}/follow")]
+        public async Task<IActionResult> FollowBusiness(Guid businessId)
         {
-            bool followBusiness = await _IBusinessService.FollowBusinessAsync(businessUsername);
+            bool followBusiness = await _IBusinessService.FollowBusinessAsync(businessId);
             if (!followBusiness)
             {
                 return NotFound();
@@ -223,10 +223,10 @@ namespace GP.Web.Controllers
             return Ok();
         }
 
-        [HttpDelete("{businessUsername}/follow")]
-        public async Task<IActionResult> UnfollowBusiness(string businessUsername)
+        [HttpDelete("{businessId}/follow")]
+        public async Task<IActionResult> UnfollowBusiness(Guid businessId)
         {
-            bool unFollowBusiness = await _IBusinessService.UnfollowBusinessAsync(businessUsername);
+            bool unFollowBusiness = await _IBusinessService.UnfollowBusinessAsync(businessId);
             if (!unFollowBusiness)
             {
                 return NotFound();

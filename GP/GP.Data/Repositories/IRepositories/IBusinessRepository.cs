@@ -9,10 +9,10 @@ namespace RealWord.Data.Repositories
 {
     public interface IBusinessRepository
     {
-        Task<bool> BusinessExistsAsync(string businessUsername);
+        Task<bool> BusinessExistsAsync(Guid businessId);
         Task<bool> EmailAvailableAsync(string email);
         Task<BusinessOwner> LoginUserAsync(BusinessOwner business);
-        Task<Business> GetBusinessAsync(string businessUsername);
+        Task<Business> GetBusinessAsync(Guid businessId);
         Task<Business> GetBusinessByIdAsync(Guid businessId);
         Task<BusinessOwner> GetBusinessOwnerAsync(string businessName);
         Task<Business> GetBusinessAsNoTrackingAsync(string businessUsername);

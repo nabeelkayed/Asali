@@ -114,9 +114,13 @@ namespace RealWord.Data.Repositories
                 updatedUser.HeadLine = userForUpdate.HeadLine.ToLower();
             }
 
-            if (!string.IsNullOrWhiteSpace(userForUpdate.Location))
+            if (!string.IsNullOrWhiteSpace(userForUpdate.Lon))
             {
-                updatedUser.Location = userForUpdate.Location.ToLower();
+                updatedUser.Lon = userForUpdate.Lon;
+            }
+            if (!string.IsNullOrWhiteSpace(userForUpdate.Lat))
+            {
+                updatedUser.Lat = userForUpdate.Lat;
             }
         }
 

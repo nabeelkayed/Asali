@@ -87,7 +87,7 @@ namespace GP.Web
                 options.UseSqlServer(configuration.GetConnectionString("SQLServer"));
             });
 
-            services.AddScoped<ITagRepository, TagRepository>();
+           // services.AddScoped<ITagRepository, TagRepository>();
             services.AddScoped<IBusinessRepository, BusinessRepository>();
             services.AddScoped<IReviewRepository, ReviewRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
@@ -136,11 +136,12 @@ namespace GP.Web
             }
 
             app.UseStaticFiles();
-
+             
             app.UseRouting();
 
-            app.UseCors(options => options.//AllowAnyOrigin()
-            WithOrigins("http://localhost:3000")
+            app.UseCors(options => options.//AllowAnyOrigin().
+         // WithOrigins("http://localhost:6570")
+            WithOrigins("http://192.168.1.8:19000")
                                          .AllowAnyMethod()
                                          .AllowAnyHeader());
 

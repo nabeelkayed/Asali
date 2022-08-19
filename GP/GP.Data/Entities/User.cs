@@ -26,7 +26,9 @@ namespace RealWord.Data.Entities
         public string Photo { get; set; }
         public string HeadLine { get; set; }
         public string Bio { get; set; }
-        public string Location { get; set; }
+        public string Lon { get; set; }
+        public string Lat { get; set; }
+
 
         public List<BusinessFollowers> Followings { get; set; }
         public List<ReviewCool> Cool { get; set; } 

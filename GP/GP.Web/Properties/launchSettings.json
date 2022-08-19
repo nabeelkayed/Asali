@@ -7,17 +7,17 @@
       "sslPort": 0
     },
     "iisExpress": {
-      "applicationUrl": "http://localhost:5000",
+      "applicationUrl": "http://localhost:50001",
       "sslPort": 0
     }
   },
   "profiles": {
     "IIS Express": {
-      "commandName": "IISExpress",
+      "commandName": "Project",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "http://localhost:50001",
+      "applicationUrl": "http://192.168.1.8:50001",
       "jsWebView2Debugging": false
     },
     "GP.Web": {

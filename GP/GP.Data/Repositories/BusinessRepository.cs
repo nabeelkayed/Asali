@@ -19,14 +19,14 @@ namespace RealWord.Data.Repositories
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public async Task<bool> BusinessExistsAsync(string businessName)
+        public async Task<bool> BusinessExistsAsync(Guid businessId)
         {
-            if (String.IsNullOrEmpty(businessName))
+          /*  if (String.IsNullOrEmpty(businessName))
             {
                 throw new ArgumentNullException(nameof(businessName));
-            }
+            }*/
 
-            bool businessExists = await _context.Businesses.AnyAsync(b => b.BusinessName == businessName);
+            bool businessExists = await _context.Businesses.AnyAsync(b => b.BusinessId == businessId);
             return businessExists;
         }
 
@@ -46,18 +46,19 @@ namespace RealWord.Data.Repositories
         public async Task<Business> GetBusinessByIdAsync(Guid businessId)
         {
 
-            var business = await _context.Businesses.FirstOrDefaultAsync(b => b.BusinessId == businessId);
+            var business = await _context.Businesses
+.FirstOrDefaultAsync(b => b.BusinessId == businessId);
             return business;
         }
 
-        public async Task<Business> GetBusinessAsync(string businessUsername)
+        public async Task<Business> GetBusinessAsync(Guid businessId)
         {
-            if (String.IsNullOrEmpty(businessUsername))
+            /*if (String.IsNullOrEmpty(businessUsername))
             {
                 throw new ArgumentNullException(nameof(businessUsername));
-            }
+            }*/
 
-            var business = await _context.Businesses.FirstOrDefaultAsync(b => b.BusinessName == businessUsername);
+            var business = await _context.Businesses.FirstOrDefaultAsync(b => b.BusinessId == businessId);
             return business;
         }
 
@@ -85,47 +86,46 @@ namespace RealWord.Data.Repositories
 
             var business = await _context.Businesses.AsNoTracking()
                                            .Include(b => b.Reviews)
+                                           //.Include(b => b.BusinessOwner)
                                            .FirstOrDefaultAsync(b => b.BusinessId == businessOwner.BusinessId);
+            businessOwner = await _context.BusinessOwners.FirstOrDefaultAsync(a => a.BusinessId == business.BusinessId);
+            business.BusinessOwner = businessOwner;
             return business;
         }
 
         public async Task<List<Business>> GetBusinessesAsync(BusinessesParameters businessesParameters)
         {
-            var businesses = _context.Businesses.AsQueryable();
+            var businesses = _context.Businesses.Include(r=>r.Reviews).AsQueryable();
 
-            /* if (!string.IsNullOrEmpty(businessesParameters.Tag))
-             {
-                 var tag = businessesParameters.Tag.Trim();
-                 var userfavarets = await _context.ArticleTags.Where(af => af.TagId == tag)
-                                                        .Select(a => a.ArticleId)
-                                                        .ToListAsync();
-                 businesses = businesses.Where(a => userfavarets.Contains(a.BusinessId));
-             }*/
             if (!string.IsNullOrEmpty(businessesParameters.Category))
             {
-                //var authorname = businessesParameters.Category.Trim();
-                //var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == authorname);
-                businesses = businesses.Where(b => b.Category == businessesParameters.Category);
+                var category = businessesParameters.Category.Trim();
+                businesses = businesses.Where(b => b.Category == category);
             }
 
-            if (!string.IsNullOrEmpty(businessesParameters.Followed))
+            if (businessesParameters.AvgRate != 0)
             {
-                var username = businessesParameters.Followed.Trim();
-                var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
-
-                var userfavarets = await _context.BusinessFollowers.Where(bf => bf.UserId == user.UserId)
-                                                            .Select(b => b.BusinessId)
-                                                            .ToListAsync();
-                businesses = businesses.Where(b => userfavarets.Contains(b.BusinessId));
+                businesses = businesses.Where(b => b.Reviews.Select(r=>r.Rate).Average()== businessesParameters.AvgRate);
             }
 
-            businesses = businesses.Skip(businessesParameters.Offset)
-                               .Take(businessesParameters.Limit)
-                                                 /*  .Include(a => a.User)
-                                                   .ThenInclude(a => a.Followers)
-                                                   .Include(a => a.Tags)
-                                                   .Include(a => a.Favorites)
-                                                   .OrderByDescending(x => x.CreatedAt)*/;
+            if (businessesParameters.MostlyReviewd)
+            {
+                businesses = businesses.OrderByDescending(b => b.Reviews.Count());
+            }
+
+            if (businessesParameters.MostlyReviewd)
+            {
+                businesses = businesses.OrderByDescending(b => b.Reviews.Count());
+            }
+
+
+                                                       /*   businesses = businesses.Skip(businessesParameters.Offset)
+                                                                             .Take(businessesParameters.Limit)*/
+                                                       /*  .Include(a => a.User)
+                                                         .ThenInclude(a => a.Followers)
+                                                         .Include(a => a.Tags)
+                                                         .Include(a => a.Favorites)
+                                                         .OrderByDescending(x => x.CreatedAt)*/;
 
             var allBusinesses = await businesses.ToListAsync();
             return allBusinesses;
@@ -140,7 +140,7 @@ namespace RealWord.Data.Repositories
         public async Task<List<User>> GetFollowersForBusinessAsync(Guid businessId)
         {
 
-            var followers = await _context.BusinessFollowers.Where(b => b.BusinessId == businessId).Select(a => a.User).ToListAsync();
+            var followers = await _context.BusinessFollowers.Include(a=>a.User).Where(b => b.BusinessId == businessId).Select(a => a.User).ToListAsync();
             return followers;
         }
 
@@ -148,6 +148,8 @@ namespace RealWord.Data.Repositories
         {
             var business = new Business { BusinessId = Guid.NewGuid() };
             await _context.Businesses.AddAsync(business);
+
+            //var businessService = new Service { BusinessId = business.BusinessId};
 
             businessOwner.BusinessOwnerId = Guid.NewGuid();
             businessOwner.BusinessId = business.BusinessId;
@@ -161,9 +163,14 @@ namespace RealWord.Data.Repositories
                 updatedBusiness.BusinessName = businessEntityForUpdate.BusinessName;
             }
 
-            if (!string.IsNullOrWhiteSpace(businessEntityForUpdate.Location))
+            if (!string.IsNullOrWhiteSpace(businessEntityForUpdate.Lon))
             {
-                updatedBusiness.Location = businessEntityForUpdate.Location;
+                updatedBusiness.Lon = businessEntityForUpdate.Lon;
+            }
+
+            if (!string.IsNullOrWhiteSpace(businessEntityForUpdate.Lat))
+            {
+                updatedBusiness.Lat = businessEntityForUpdate.Lat;
             }
 
             if (!string.IsNullOrWhiteSpace(businessEntityForUpdate.Category))
@@ -197,9 +204,14 @@ namespace RealWord.Data.Repositories
                 updatedBusiness.BusinessName = businessProfileForUpdate.BusinessName;
             }
 
-            if (!string.IsNullOrWhiteSpace(businessProfileForUpdate.Location))
+            if (!string.IsNullOrWhiteSpace(businessProfileForUpdate.Lon))
             {
-                updatedBusiness.Location = businessProfileForUpdate.Location;
+                updatedBusiness.Lon = businessProfileForUpdate.Lon;
+            }
+
+            if (!string.IsNullOrWhiteSpace(businessProfileForUpdate.Lat))
+            {
+                updatedBusiness.Lat = businessProfileForUpdate.Lat;
             }
 
             if (!string.IsNullOrWhiteSpace(businessProfileForUpdate.Category))

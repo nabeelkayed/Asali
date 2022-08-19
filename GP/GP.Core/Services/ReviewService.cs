@@ -35,9 +35,9 @@ namespace RealWord.Core.Services
                 throw new ArgumentNullException(nameof(mapper));
         }
 
-        public async Task<bool> ReviewExistsAsync(string businessUsername, Guid reviewId)
+        public async Task<bool> ReviewExistsAsync(Guid businessId, Guid reviewId)
         {
-            var businessExists = await _IBusinessService.BusinessExistsAsync(businessUsername);
+            var businessExists = await _IBusinessService.BusinessExistsAsync(businessId);
             if (!businessExists)
             {
                 return false;
@@ -52,7 +52,7 @@ namespace RealWord.Core.Services
             return true;
         }
 
-        public async Task<bool> IsAuthorized(string businessUsername, Guid reviewId)
+        public async Task<bool> IsAuthorized(Guid businessId, Guid reviewId)
         {
             var review = await _IReviewRepository.GetReviewAsync(reviewId);
             var currentUserId = await _IUserService.GetCurrentUserIdAsync();
@@ -87,6 +87,7 @@ namespace RealWord.Core.Services
             {
                 var reviewDto = _mapper.Map<ReviewDto>(review);
                 var profileDto = _mapper.Map<UserProfileDto>(review.User);
+                profileDto.Reviews = null;
                 reviewDto.User = profileDto;
                 reviewsToReturn.Add(reviewDto);
             }

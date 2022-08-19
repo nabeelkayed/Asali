@@ -17,12 +17,12 @@ namespace RealWord.Data
         public DbSet<Business> Businesses { get; set; }
         public DbSet<BusinessFollowers> BusinessFollowers { get; set; }
         public DbSet<BusinessOwner> BusinessOwners { get; set; }
-        public DbSet<BusinessTags> BusinessTags { get; set; }
-        public DbSet<Feature> Features { get; set; }
+        //public DbSet<BusinessTags> BusinessTags { get; set; }
+        //public DbSet<Feature> Features { get; set; }
         public DbSet<OpenDay> OpenDays { get; set; }
         public DbSet<Photo> Photos { get; set; }
         public DbSet<Service> Services { get; set; }
-        public DbSet<Tag> Tags { get; set; }
+       // public DbSet<Tag> Tags { get; set; }
 
         public DbSet<Review> Reviews { get; set; }
         public DbSet<ReviewCool> ReviewCool { get; set; }

@@ -10,12 +10,12 @@ namespace GP.Core.Services
 {
     public interface IBusinessService
     {
-        Task<bool> BusinessExistsAsync(string businessUsername);
-        Task<bool> IsAuthorized(string businessUsername);
+        Task<bool> BusinessExistsAsync(Guid businessId);
+        Task<bool> IsAuthorized(Guid businessId);
         Task<BusinessDto> LoginBusinessAsync(BusinessLoginDto BusinessLogin);
         Task<BusinessProfileDto> GetCurrentBusinessAsync();
-        Task<Guid> GetCurrentBusinessIdAsync(string businessUsername);
-        Task<BusinessProfileDto> GetBusinessProfileAsync(string businessUsername);
+        //Task<Guid> GetCurrentBusinessIdAsync(string businessUsername);
+        Task<BusinessProfileDto> GetBusinessProfileAsync(Guid businessId);
         Task<IEnumerable<BusinessProfileDto>> GetBusinessesAsync(BusinessesParameters businessesParameters);
         Task<List<Photo>> GetPhotosForBusinessAsync(Guid businessId);
         Task<List<UserProfileDto>> GetFollowersForBusinessAsync(Guid businessId);
@@ -24,8 +24,8 @@ namespace GP.Core.Services
         Task<bool> UpdateBusinessProfileAsync(BusinessProfileForUpdateDto businessProfileForUpdate);
         Task<bool> UpdateBusinessAsync(BusinessForUpdateDto businessForUpdate);
         Task<bool> UpdateBusinessPasswordAsync(BusinessForUpdatePasswordDto businessForUpdatePassword);
-        Task<bool> DeleteBusinessAsync(string businessUsername);
-        Task<bool> FollowBusinessAsync(string businessUsername);
-        Task<bool> UnfollowBusinessAsync(string businessUsername);
+        Task<bool> DeleteBusinessAsync(Guid businessId);
+        Task<bool> FollowBusinessAsync(Guid businessId);
+        Task<bool> UnfollowBusinessAsync(Guid businessId);
     }
 }

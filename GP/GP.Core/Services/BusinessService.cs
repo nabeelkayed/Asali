@@ -43,18 +43,18 @@ namespace GP.Core.Services
                 throw new ArgumentNullException(nameof(mapper));
         }
 
-        public async Task<bool> BusinessExistsAsync(string businessUsername)
+        public async Task<bool> BusinessExistsAsync(Guid businessId)
         {
-            var businessExists = await _IBusinessRepository.BusinessExistsAsync(businessUsername);
+            var businessExists = await _IBusinessRepository.BusinessExistsAsync(businessId);
             return businessExists;
         }
 
-        public async Task<bool> IsAuthorized(string businessUsername)
+        public async Task<bool> IsAuthorized(Guid businessId)
         {
-            var business = await _IBusinessRepository.GetBusinessAsync(businessUsername);
-            var currentBusinessId = await GetCurrentBusinessIdAsync(businessUsername);
+            var business = await _IBusinessRepository.GetBusinessByIdAsync(businessId);
+            var currentBusiness = await GetCurrentBusinessAsync();
 
-            var isAuthorized = currentBusinessId == business.BusinessId;
+            var isAuthorized = currentBusiness.BusinessId == business.BusinessId;
             return isAuthorized;
         }
 
@@ -91,17 +91,17 @@ namespace GP.Core.Services
             return null;
         }
 
-        public async Task<Guid> GetCurrentBusinessIdAsync(string businessUsername) //see the user function
+      /*  public async Task<Guid> GetCurrentBusinessIdAsync(string businessUsername) //see the user function
         {
             var business = await _IBusinessRepository.GetBusinessAsync(businessUsername);
 
             var businessId = business?.BusinessId ?? Guid.Empty;
             return businessId;
-        }
+        }*/
 
-        public async Task<BusinessProfileDto> GetBusinessProfileAsync(string businessUsername)
+        public async Task<BusinessProfileDto> GetBusinessProfileAsync(Guid businessId)
         {
-            var business = await _IBusinessRepository.GetBusinessAsync(businessUsername);
+            var business = await _IBusinessRepository.GetBusinessByIdAsync(businessId);
             if (business == null)
             {
                 return null;
@@ -217,7 +217,7 @@ namespace GP.Core.Services
         public async Task<bool> UpdateBusinessProfileAsync(BusinessProfileForUpdateDto businessProfileForUpdate)
         {
             var currentBusiness = await GetCurrentBusinessAsync();
-            var updatedBusiness = await _IBusinessRepository.GetBusinessAsync(currentBusiness.BusinessName);
+            var updatedBusiness = await _IBusinessRepository.GetBusinessAsync(currentBusiness.BusinessId);
 
             var businessEntityForUpdate = _mapper.Map<Business>(businessProfileForUpdate);
 
@@ -260,9 +260,9 @@ namespace GP.Core.Services
             return false;
         }
 
-        public async Task<bool> DeleteBusinessAsync(string businessUsername)
+        public async Task<bool> DeleteBusinessAsync(Guid businessId)
         {
-            var business = await _IBusinessRepository.GetBusinessAsync(businessUsername);
+            var business = await _IBusinessRepository.GetBusinessAsync(businessId);
 
             _IBusinessRepository.DeleteBusiness(business);
             await _IBusinessRepository.SaveChangesAsync();
@@ -270,9 +270,9 @@ namespace GP.Core.Services
             return true;
         }
 
-        public async Task<bool> FollowBusinessAsync(string businessUsername)
+        public async Task<bool> FollowBusinessAsync(Guid businessId)
         {
-            var business = await _IBusinessRepository.GetBusinessAsync(businessUsername);
+            var business = await _IBusinessRepository.GetBusinessByIdAsync(businessId);
             if (business == null)
             {
                 return false;
@@ -291,9 +291,9 @@ namespace GP.Core.Services
             return true;
         }
 
-        public async Task<bool> UnfollowBusinessAsync(string businessUsername)
+        public async Task<bool> UnfollowBusinessAsync(Guid businessId)
         {
-            var business = await _IBusinessRepository.GetBusinessAsync(businessUsername);
+            var business = await _IBusinessRepository.GetBusinessAsync(businessId);
             if (business == null)
             {
                 return false;

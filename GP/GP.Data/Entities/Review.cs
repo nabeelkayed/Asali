@@ -17,6 +17,8 @@ namespace RealWord.Data.Entities
         public string ReviewText { get; set; }
         public int Rate { get; set; }
         public DateTime CreatedAt { get; set; }
+        public string Sentement { get; set; }
+
 
         public List<ReviewCool> Cool { get; set; }
         public List<ReviewFunny> Funny { get; set; }

@@ -56,16 +56,16 @@ namespace GP.Web.Controllers
             return Ok();
         }
 
-        [HttpDelete("{businessUsername}/reviews/{reviewId}")]
-        public async Task<IActionResult> DeleteReview(string businessUsername, Guid reviewId)
+        [HttpDelete("{businessId}/reviews/{reviewId}")]
+        public async Task<IActionResult> DeleteReview(Guid businessId, Guid reviewId)
         {
-            var isReviewExists = await _IReviewService.ReviewExistsAsync(businessUsername, reviewId);
+            var isReviewExists = await _IReviewService.ReviewExistsAsync(businessId, reviewId);
             if (!isReviewExists)
             {
                 return NotFound();
             }
 
-            var isAuthorized = await _IReviewService.IsAuthorized(businessUsername, reviewId);
+            var isAuthorized = await _IReviewService.IsAuthorized(businessId, reviewId);
             if (!isAuthorized)
             {
                 return Forbid();
@@ -75,10 +75,10 @@ namespace GP.Web.Controllers
             return NoContent();
         }
 
-        [HttpPost("{businessUsername}/reviews/{reviewId}/cool")]
-        public async Task<IActionResult> CoolReview(string businessUsername, Guid reviewId)
+        [HttpPost("{businessId}/reviews/{reviewId}/cool")]
+        public async Task<IActionResult> CoolReview(Guid businessId, Guid reviewId)
         {
-            var isReviewExists = await _IReviewService.ReviewExistsAsync(businessUsername, reviewId);
+            var isReviewExists = await _IReviewService.ReviewExistsAsync(businessId, reviewId);
             if (!isReviewExists)
             {
                 return NotFound();
@@ -88,10 +88,10 @@ namespace GP.Web.Controllers
             return Ok();
         }
 
-        [HttpDelete("{businessUsername}/reviews/{reviewId}/cool")]
-        public async Task<IActionResult> UnCoolReview(string businessUsername, Guid reviewId)
+        [HttpDelete("{businessId}/reviews/{reviewId}/cool")]
+        public async Task<IActionResult> UnCoolReview(Guid businessId, Guid reviewId)
         {
-            var isReviewExists = await _IReviewService.ReviewExistsAsync(businessUsername, reviewId);
+            var isReviewExists = await _IReviewService.ReviewExistsAsync(businessId, reviewId);
             if (!isReviewExists)
             {
                 return NotFound();
@@ -101,10 +101,10 @@ namespace GP.Web.Controllers
             return Ok();
         }
 
-        [HttpPost("{businessUsername}/reviews/{reviewId}/useful")]
-        public async Task<IActionResult> UsefulReview(string businessUsername, Guid reviewId)
+        [HttpPost("{businessId}/reviews/{reviewId}/useful")]
+        public async Task<IActionResult> UsefulReview(Guid businessId, Guid reviewId)
         {
-            var isReviewExists = await _IReviewService.ReviewExistsAsync(businessUsername, reviewId);
+            var isReviewExists = await _IReviewService.ReviewExistsAsync(businessId, reviewId);
             if (!isReviewExists)
             {
                 return NotFound();
@@ -114,10 +114,10 @@ namespace GP.Web.Controllers
             return Ok();
         }
 
-        [HttpDelete("{businessUsername}/reviews/{reviewId}/useful")]
-        public async Task<IActionResult> UnUsefulReview(string businessUsername, Guid reviewId)
+        [HttpDelete("{businessId}/reviews/{reviewId}/useful")]
+        public async Task<IActionResult> UnUsefulReview(Guid businessId, Guid reviewId)
         {
-            var isReviewExists = await _IReviewService.ReviewExistsAsync(businessUsername, reviewId);
+            var isReviewExists = await _IReviewService.ReviewExistsAsync(businessId, reviewId);
             if (!isReviewExists)
             {
                 return NotFound();
@@ -127,10 +127,10 @@ namespace GP.Web.Controllers
             return Ok();
         }
 
-        [HttpPost("{businessUsername}/reviews/{reviewId}/funny")]
-        public async Task<IActionResult> FunnyReview(string businessUsername, Guid reviewId)
+        [HttpPost("{businessId}/reviews/{reviewId}/funny")]
+        public async Task<IActionResult> FunnyReview(Guid businessId, Guid reviewId)
         {
-            var isReviewExists = await _IReviewService.ReviewExistsAsync(businessUsername, reviewId);
+            var isReviewExists = await _IReviewService.ReviewExistsAsync(businessId, reviewId);
             if (!isReviewExists)
             {
                 return NotFound();
@@ -140,10 +140,10 @@ namespace GP.Web.Controllers
             return Ok();
         }
 
-        [HttpDelete("{businessUsername}/reviews/{reviewId}/funny")]
-        public async Task<IActionResult> UnFunnyReview(string businessUsername, Guid reviewId)
+        [HttpDelete("{businessId}/reviews/{reviewId}/funny")]
+        public async Task<IActionResult> UnFunnyReview(Guid businessId, Guid reviewId)
         {
-            var isReviewExists = await _IReviewService.ReviewExistsAsync(businessUsername, reviewId);
+            var isReviewExists = await _IReviewService.ReviewExistsAsync(businessId, reviewId);
             if (!isReviewExists)
             {
                 return NotFound();

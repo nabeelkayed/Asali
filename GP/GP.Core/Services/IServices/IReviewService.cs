@@ -8,8 +8,8 @@ namespace RealWord.Core.Services
 {
     public interface IReviewService
     {
-        Task<bool> ReviewExistsAsync(string businessUsername, Guid reviewId);
-        Task<bool> IsAuthorized(string businessUsername, Guid reviewId);
+        Task<bool> ReviewExistsAsync(Guid businessId, Guid reviewId);
+        Task<bool> IsAuthorized(Guid businessId, Guid reviewId);
         Task<ReviewDto> GetReviewAsync(Guid reviewId);
         Task<IEnumerable<ReviewDto>> GetReviewsForBusinessAsync(Guid businessId);
         Task<IEnumerable<ReviewDto>> GetFeedReviewsAsync(FeedReviewsParameters feedReviewsParameters);

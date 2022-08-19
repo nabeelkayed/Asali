@@ -62,15 +62,52 @@ namespace RealWord.Data.Repositories
             {
                 throw new ArgumentNullException(nameof(userFollowings));
             }
-            //لشو لازم نعمل include
-            var feedReviews = await _context.Reviews.Where(r => userFollowings.Contains(r.BusinessId))
+
+            var feedReviews =  _context.Reviews.Where(r => userFollowings.Contains(r.BusinessId))
                                                 .Include(r => r.User)
-                                                .ThenInclude(r => r.Followings)
-                                                .OrderByDescending(r => r.CreatedAt)
-                                                .Skip(feedReviewsParameters.Offset)
-                                                .Take(feedReviewsParameters.Limit)
-                                                .ToListAsync();
-            return feedReviews;
+                                                .Include(r => r.Business)
+                                                .Include(r=>r.Cool)
+                                                .Include(r => r.Useful)
+                                                .Include(r => r.Funny).AsQueryable();
+
+            if (!string.IsNullOrEmpty(feedReviewsParameters.Category))
+            {
+                var category = feedReviewsParameters.Category.Trim();
+                feedReviews = feedReviews.Where(b => b.Business.Category == category);
+            }
+
+            if (feedReviewsParameters.Rate != 0 )
+            {
+                feedReviews = feedReviews.Where(b => b.Rate == feedReviewsParameters.Rate);
+            }
+
+            if (!string.IsNullOrEmpty(feedReviewsParameters.Sentement)) 
+            { 
+                feedReviews = feedReviews.Where(b => /*b.Rate*/ " "== feedReviewsParameters.Sentement);
+            }
+
+            if (feedReviewsParameters.Latest)
+            {
+                feedReviews = feedReviews.OrderByDescending(r => r.CreatedAt);
+            }
+            else
+            {
+                feedReviews = feedReviews.OrderBy(r => r.CreatedAt);
+
+            }
+
+            if (feedReviewsParameters.Trendy)
+            {
+                feedReviews = feedReviews.Where(r=>r.CreatedAt > DateTime.Now.AddDays(-7));
+                feedReviews = feedReviews.OrderByDescending(r => r.Funny.Count()+ r.Cool.Count()+ r.Useful.Count());
+            }
+
+            // .Skip(feedReviewsParameters.Offset)
+            //.Take(feedReviewsParameters.Limit)
+
+            var reviews =await feedReviews.ToListAsync();
+
+            return reviews;
         }
 
         public async Task CreateReviewAsync(Guid businessId ,Guid currentUserId, Review review)

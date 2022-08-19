@@ -10,18 +10,18 @@ namespace RealWord.Core.Services
 {
     public class TagService : ITagService
     {
-        private readonly ITagRepository _ITagRepository;
+       // private readonly ITagRepository _ITagRepository;
         private readonly IMapper _mapper;
 
-        public TagService(ITagRepository tagRepository,
+        public TagService(/*ITagRepository tagRepository,*/
             IMapper mapper)
         {
-            _ITagRepository = tagRepository ??
-                throw new ArgumentNullException(nameof(tagRepository));
+           /* _ITagRepository = tagRepository ??
+                throw new ArgumentNullException(nameof(tagRepository));*/
             _mapper = mapper ??
                 throw new ArgumentNullException(nameof(mapper));
         }
-        public async Task<TagDto> GetTagsAsync()
+       /* public async Task<TagDto> GetTagsAsync()
         {
             var tags = await _ITagRepository.GetTagsAsync();
 
@@ -38,6 +38,6 @@ namespace RealWord.Core.Services
             }
             await _ITagRepository.CreateArticleTagsAsync(tagList, articleId);
             await _ITagRepository.SaveChangesAsync();
-        }
+        }*/
     }
 }
